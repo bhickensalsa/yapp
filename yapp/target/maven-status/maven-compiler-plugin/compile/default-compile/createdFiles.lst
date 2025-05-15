@@ -4,6 +4,7 @@ com\securechat\crypto\EncryptionManager.class
 com\securechat\Launcher.class
 com\securechat\model\KeyBundle.class
 com\securechat\protocol\MessageType.class
+com\securechat\crypto\libsignal\EncryptedMessageResult.class
 com\securechat\store\PreKeyStore.class
 com\securechat\config\ConfigLoader.class
 com\securechat\client\UserClient.class

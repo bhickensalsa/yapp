@@ -53,11 +53,11 @@ public class Launcher {
 
         UserClient bob = new UserClient("bob", bobKeyStore, bobPreKeyId, bobSignedPreKeyId);
         bob.connectToServer("localhost", 8888);
+        bob.listen();
 
         if (alice.establishSessionWith("bob")) {
-            bob.listen();
             alice.listen();
-            alice.sendMessage("bob", "Hello Bob! This message is encrypted.");
+            alice.sendMessage("bob", "testmsg");
             logger.info("Alice sent an encrypted message to Bob");
         } else {
             logger.warn("Failed to establish secure session between Alice and Bob");

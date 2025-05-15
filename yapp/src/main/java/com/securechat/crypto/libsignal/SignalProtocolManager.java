@@ -1,5 +1,7 @@
 package com.securechat.crypto.libsignal;
 
+import java.nio.charset.StandardCharsets;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,42 +32,30 @@ public class SignalProtocolManager {
     }
 
     // Encrypts a plaintext message for the given recipient.
-    public byte[] encryptMessage(SignalProtocolAddress recipient, String plaintext) {
+    public EncryptedMessageResult encryptMessage(SignalProtocolAddress address, String plaintext) {
+        SessionCipher cipher = new SessionCipher(store, address);
+
         try {
-            if (!store.containsSession(recipient)) {
-                logger.warn("No session found for {}, cannot encrypt message", recipient);
-                return null;
-            }
-            logger.debug("Encrypting message for recipient {}", recipient);
-            SessionCipher cipher = new SessionCipher(store, recipient);
-            byte[] ciphertext = cipher.encrypt(plaintext.getBytes()).serialize();
-            logger.info("Message encrypted for recipient {}", recipient);
-            return ciphertext;
+            CiphertextMessage message = cipher.encrypt(plaintext.getBytes(StandardCharsets.UTF_8));
+            return new EncryptedMessageResult(message.serialize(), false);
         } catch (UntrustedIdentityException e) {
-            logger.error("Failed to encrypt message for {}: {}", recipient, e.getMessage(), e);
-            return null;
-        } catch (IllegalArgumentException e) {
-            logger.error("Unexpected error encrypting message for {}: {}", recipient, e.getMessage(), e);
-            return null;
+            logger.error("Untrusted identity while encrypting message for {}: {}", address, e.getMessage(), e);
+            return null; // or rethrow as a custom exception if needed
         }
     }
 
     // Decrypts an encrypted message from the sender.
-    public String decryptMessage(SignalProtocolAddress sender, byte[] encryptedMessageBytes) {
-        try {
-            logger.debug("Decrypting message from sender {}", sender);
-            SessionCipher cipher = new SessionCipher(store, sender);
-            SignalMessage encryptedMessage = new SignalMessage(encryptedMessageBytes);
-            byte[] decryptedBytes = cipher.decrypt(encryptedMessage);
-            String plaintext = new String(decryptedBytes);
-            logger.info("Message decrypted from sender {}", sender);
-            return plaintext;
-        } catch (InvalidMessageException | LegacyMessageException | DuplicateMessageException |
-                 NoSessionException | UntrustedIdentityException e) {
-            logger.error("Failed to decrypt message from {}: {}", sender, e.getMessage(), e);
-            return null;
-        }
+    public String decryptMessage(SignalProtocolAddress address, byte[] ciphertext) {
+    try {
+        SessionCipher cipher = new SessionCipher(store, address);
+        SignalMessage signalMessage = new SignalMessage(ciphertext);
+        byte[] plaintext = cipher.decrypt(signalMessage);
+        return new String(plaintext, StandardCharsets.UTF_8);
+    } catch (Exception e) {
+        logger.error("Failed to decrypt SignalMessage: {}", e.getMessage(), e);
+        return null;
     }
+}
 
     // Encrypts a plaintext message for an unestablished session using a PreKeySignalMessage.
     public byte[] encryptPreKeyMessage(SignalProtocolAddress recipient, String plaintext) {
@@ -82,18 +72,14 @@ public class SignalProtocolManager {
     }
 
     // Decrypts a PreKeySignalMessage from the sender and establishes a session.
-    public String decryptPreKeyMessage(SignalProtocolAddress sender, byte[] preKeyMessageBytes) {
+    public String decryptPreKeyMessage(SignalProtocolAddress address, byte[] ciphertext) {
         try {
-            logger.debug("Decrypting pre-key message from sender {}", sender);
-            PreKeySignalMessage preKeySignalMessage = new PreKeySignalMessage(preKeyMessageBytes);
-            SessionCipher cipher = new SessionCipher(store, sender);
-            byte[] decryptedBytes = cipher.decrypt(preKeySignalMessage);
-            String plaintext = new String(decryptedBytes);
-            logger.info("Pre-key message decrypted from sender {}", sender);
-            return plaintext;
-        } catch (UntrustedIdentityException | InvalidMessageException | InvalidVersionException |
-                 DuplicateMessageException | LegacyMessageException | InvalidKeyIdException | InvalidKeyException e) {
-            logger.error("Failed to decrypt pre-key message from {}: {}", sender, e.getMessage(), e);
+            SessionCipher cipher = new SessionCipher(store, address);
+            PreKeySignalMessage preKeyMessage = new PreKeySignalMessage(ciphertext);
+            byte[] plaintext = cipher.decrypt(preKeyMessage);
+            return new String(plaintext, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            logger.error("Failed to decrypt PreKeySignalMessage: {}", e.getMessage(), e);
             return null;
         }
     }
