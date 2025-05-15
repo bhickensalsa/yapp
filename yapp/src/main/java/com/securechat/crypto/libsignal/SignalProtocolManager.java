@@ -25,11 +25,19 @@ public class SignalProtocolManager {
     // Encrypts a plaintext message for the given recipient.
     public byte[] encryptMessage(SignalProtocolAddress recipient, String plaintext) {
         try {
+            if (!store.containsSession(recipient)) {
+                System.err.println("[SignalProtocolManager] No session found for " + recipient);
+                return null;
+            }
             SessionCipher cipher = new SessionCipher(store, recipient);
             byte[] ciphertext = cipher.encrypt(plaintext.getBytes()).serialize();
             return ciphertext;
         } catch (UntrustedIdentityException e) {
             System.err.println("Failed to encrypt message: " + e.getMessage());
+            return null;
+        } catch (IllegalArgumentException e) {
+            System.err.println("[SignalProtocolManager] Unexpected error encrypting message for " + recipient + ": " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }

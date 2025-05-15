@@ -1,52 +1,68 @@
 package com.securechat;
 
-import org.whispersystems.libsignal.state.PreKeyRecord;
-import org.whispersystems.libsignal.state.SignedPreKeyRecord;
-
 import com.securechat.client.UserClient;
 import com.securechat.crypto.KeyManager;
 import com.securechat.crypto.libsignal.SignalKeyStore;
 import com.securechat.server.Server;
+import com.securechat.store.InMemoryPreKeyStore;
+import com.securechat.store.PreKeyStore;
 
 public class Launcher {
 
     public static void main(String[] args) {
+
+        int serverPreKeyId = 1;
+        int serverSignedPreKeyId = 1;
+
+        int alicePreKeyId = 1001;
+        int aliceSignedPreKeyId = 1002;
+
+        int bobPreKeyId = 2001;
+        int bobSignedPreKeyId = 2002;
         
-        int preKeyId = 12345;
-        int signedPreKeyId = 67890;
+        // initializeKeys fills keys with those IDs
+        PreKeyStore preKeyStore = new InMemoryPreKeyStore();
+        SignalKeyStore serverKeyStore = new SignalKeyStore();
+        initializeKeys(serverKeyStore, serverPreKeyId, serverSignedPreKeyId);
 
-        // Create and initialize the SignalKeyStore with keys before starting server/client
-        SignalKeyStore keyStore = new SignalKeyStore();
-        initializeKeys(keyStore, preKeyId, signedPreKeyId);
+        SignalKeyStore aliceKeyStore = new SignalKeyStore();
+        initializeKeys(aliceKeyStore, alicePreKeyId, aliceSignedPreKeyId);
+        
+        SignalKeyStore bobKeyStore = new SignalKeyStore();
+        initializeKeys(bobKeyStore, bobPreKeyId, bobSignedPreKeyId);
+        
 
-        if (args.length > 0 && args[0].equals("server")) {
-            // Start server with initialized keys
-            new Server(8888, keyStore).start();
-        } else {
-            // Start server in a new thread
-            Thread serverThread = new Thread(() -> {
-                new Server(8888, keyStore).start();
-            });
-            serverThread.setDaemon(true); // So JVM can exit if main ends
-            serverThread.start();
+        Server server = new Server(8888, serverKeyStore, preKeyStore, serverPreKeyId, serverSignedPreKeyId);
+        new Thread(server::start).start();
+        // Do NOT set daemon here, so server keeps running
+        // serverThread.setDaemon(true);
 
-            try {
-                // Wait briefly to ensure server starts before client connects
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        try {
+            Thread.sleep(2000); // wait for server to start
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
-            // Create a client for user "alice" with the same key store
-            UserClient client = new UserClient("alice", keyStore);
+        UserClient alice = new UserClient("alice", aliceKeyStore, alicePreKeyId, aliceSignedPreKeyId);
+        alice.connectToServer("localhost", 8888);
 
-            // true = this client initiates the connection and sends first
-            client.connectToPeer("localhost", 8888, true);
 
-            client.listen();
+        UserClient bob = new UserClient("bob", bobKeyStore, bobPreKeyId, bobSignedPreKeyId);
+        bob.connectToServer("localhost", 8888);
 
-            // Example send (plaintext will be encrypted internally)
-            client.sendMessage("bob", "Hello Bob! This message is encrypted.");
+        // Assuming establishSessionWith is implemented and returns boolean
+        if (alice.establishSessionWith("bob")) {
+            alice.listen();
+            alice.sendMessage("bob", "Hello Bob! This message is encrypted.");
+        }
+
+        bob.listen();
+
+        // Keep main thread alive to keep app running:
+        try {
+            Thread.currentThread().join(); // Wait indefinitely
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -54,11 +70,11 @@ public class Launcher {
         KeyManager keyManager = new KeyManager();
 
         // Generate and store a PreKey
-        PreKeyRecord preKey = keyManager.generatePreKey(preKeyId);
+        var preKey = keyManager.generatePreKey(preKeyId);
         keyStore.storePreKey(preKeyId, preKey);
 
         // Generate and store a SignedPreKey
-        SignedPreKeyRecord signedPreKey = keyManager.generateSignedPreKey(keyStore.getIdentityKeyPair(), signedPreKeyId);
+        var signedPreKey = keyManager.generateSignedPreKey(keyStore.getIdentityKeyPair(), signedPreKeyId);
         keyStore.storeSignedPreKey(signedPreKeyId, signedPreKey);
     }
 }

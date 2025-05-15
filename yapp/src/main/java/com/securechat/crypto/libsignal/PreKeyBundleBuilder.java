@@ -10,11 +10,9 @@ import org.whispersystems.libsignal.state.PreKeyRecord;
 
 public class PreKeyBundleBuilder {
 
-    public static PreKeyBundle build(int registrationId, int deviceId, SignalProtocolStore store)
-            throws InvalidKeyException {
+    public static PreKeyBundle build(int registrationId, int deviceId, SignalProtocolStore store,
+                                 int preKeyId, int signedPreKeyId) throws InvalidKeyException {
 
-        int preKeyId = 12345;
-        int signedPreKeyId = 67890;
         PreKeyRecord preKey = null;
         SignedPreKeyRecord signedPreKey = null;
 
@@ -28,6 +26,11 @@ public class PreKeyBundleBuilder {
         } catch (InvalidKeyIdException e) {
             System.err.println("Could not load signedPreKey: " + e.getMessage());
         }
+
+        if (preKey == null || signedPreKey == null) {
+            throw new IllegalStateException("PreKey or SignedPreKey not found for given IDs");
+        }
+
         IdentityKey identityKey = store.getIdentityKeyPair().getPublicKey();
 
         return new PreKeyBundle(

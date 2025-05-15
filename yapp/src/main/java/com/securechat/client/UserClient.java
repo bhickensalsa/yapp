@@ -24,63 +24,88 @@ public class UserClient {
     private final SignalKeyStore keyStore;
     private final SignalProtocolManager cryptoManager;
     private PeerConnection connection;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
 
-    public UserClient(String userId, SignalKeyStore keyStore) {
+    private final int preKeyId;
+    private final int signedPreKeyId;
+
+    // Constructor updated to accept preKey IDs (pass them from Launcher)
+    public UserClient(String userId, SignalKeyStore keyStore, int preKeyId, int signedPreKeyId) {
         this.userId = userId;
         this.keyStore = keyStore;
         this.cryptoManager = new SignalProtocolManager(keyStore);
+        this.preKeyId = preKeyId;
+        this.signedPreKeyId = signedPreKeyId;
     }
 
-    public void connectToPeer(String host, int port, boolean isInitiator) {
+    /**
+     * Connects to the server and registers this client's PreKeyBundle.
+     */
+    public void connectToServer(String host, int port) {
         try {
             Socket socket = new Socket(host, port);
             this.connection = new PeerConnection(socket);
 
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+            out = new ObjectOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
 
-            if (isInitiator) {
-                // Step 1: Build PreKeyBundle and send as JSON string
-                PreKeyBundle myBundle = PreKeyBundleBuilder.build(
-                    keyStore.getLocalRegistrationId(), deviceId, keyStore);
+            // Use explicit preKeyId and signedPreKeyId here
+            PreKeyBundle myBundle = PreKeyBundleBuilder.build(
+                keyStore.getLocalRegistrationId(),
+                deviceId,
+                keyStore,
+                preKeyId,
+                signedPreKeyId
+            );
+            String myBundleJson = PreKeyBundleDTO.fromPreKeyBundle(myBundle).toJson();
 
-                out.writeObject(userId);
-                out.writeObject(PreKeyBundleDTO.fromPreKeyBundle(myBundle).toJson());
-                out.flush();
+            out.writeObject(userId);
+            out.writeObject(myBundleJson);
+            out.flush();
 
-                // Step 2: Receive peer userId and PreKeyBundle JSON string
-                String peerId = (String) in.readObject();
-                String peerBundleJson = (String) in.readObject();
-
-                PreKeyBundle peerBundle = PreKeyBundleDTO.fromJson(peerBundleJson).toPreKeyBundle();
-
-                SignalProtocolAddress peerAddress = new SignalProtocolAddress(peerId, deviceId);
-                cryptoManager.initializeSession(peerAddress, peerBundle);
-
-            } else {
-                // Step 1: Receive peer userId and PreKeyBundle JSON string
-                String peerId = (String) in.readObject();
-                String peerBundleJson = (String) in.readObject();
-
-                PreKeyBundle peerBundle = PreKeyBundleDTO.fromJson(peerBundleJson).toPreKeyBundle();
-
-                // Step 2: Send own userId and PreKeyBundle JSON string back
-                out.writeObject(userId);
-                PreKeyBundle myBundle = PreKeyBundleBuilder.build(
-                    keyStore.getLocalRegistrationId(), deviceId, keyStore);
-                out.writeObject(PreKeyBundleDTO.fromPreKeyBundle(myBundle).toJson());
-                out.flush();
-
-                SignalProtocolAddress peerAddress = new SignalProtocolAddress(peerId, deviceId);
-                cryptoManager.initializeSession(peerAddress, peerBundle);
-            }
-
-            System.out.println("Secure session established.");
-
+            System.out.println("Registered prekey bundle with server as user " + userId);
         } catch (Exception e) {
-            System.err.println("Failed to connect or establish session: " + e.getMessage());
+            System.err.println("Failed to connect/register with server: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Request peer's PreKeyBundle from the server and establish session.
+     */
+    public boolean establishSessionWith(String peerId) {
+        try {
+            // Request peer's PreKeyBundle JSON from server
+            out.writeObject("GET_PREKEY_BUNDLE:" + peerId);
+            out.flush();
+
+            Object responseObj = in.readObject();
+            if (!(responseObj instanceof String)) {
+                System.err.println("Unexpected response from server");
+                return false;
+            }
+
+            String response = (String) responseObj;
+            if (response.startsWith("PREKEY_BUNDLE:")) {
+                String peerBundleJson = response.substring("PREKEY_BUNDLE:".length());
+                PreKeyBundle peerBundle = PreKeyBundleDTO.fromJson(peerBundleJson).toPreKeyBundle();
+
+                SignalProtocolAddress peerAddress = new SignalProtocolAddress(peerId, deviceId);
+                cryptoManager.initializeSession(peerAddress, peerBundle);
+
+                System.out.println("Secure session established with " + peerId);
+                return true;
+            } else if (response.startsWith("ERROR:")) {
+                System.err.println("Server error: " + response);
+            } else {
+                System.err.println("Unexpected server response: " + response);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to establish session with " + peerId + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public void sendMessage(String recipientId, String plaintext) {
@@ -96,7 +121,6 @@ public class UserClient {
                 "TEXT",
                 encoded
             );
-
             connection.send(MessageSerializer.serialize(message));
 
         } catch (Exception e) {
