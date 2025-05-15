@@ -1,9 +1,14 @@
 package com.securechat.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ClientManager {
+
+    private static final Logger logger = LoggerFactory.getLogger(ClientManager.class);
 
     // Map userId to their serialized PreKeyBundle (or public key data)
     private final Map<String, byte[]> publicKeys = new ConcurrentHashMap<>();
@@ -16,9 +21,11 @@ public class ClientManager {
      */
     public void register(String userId, byte[] publicKey) {
         if (userId == null || publicKey == null || publicKey.length == 0) {
+            logger.warn("Attempt to register invalid userId or publicKey. userId={}, publicKey length={}", userId, (publicKey == null ? "null" : publicKey.length));
             throw new IllegalArgumentException("UserId and publicKey must be non-null and valid.");
         }
         publicKeys.put(userId, publicKey);
+        logger.info("Registered public key for user '{}', key length: {}", userId, publicKey.length);
     }
 
     /**
@@ -29,8 +36,15 @@ public class ClientManager {
      */
     public byte[] getPublicKey(String userId) {
         if (userId == null) {
+            logger.warn("Attempted to get public key for null userId");
             return null;
         }
-        return publicKeys.get(userId);
+        byte[] key = publicKeys.get(userId);
+        if (key == null) {
+            logger.debug("No public key found for user '{}'", userId);
+        } else {
+            logger.debug("Retrieved public key for user '{}', key length: {}", userId, key.length);
+        }
+        return key;
     }
 }

@@ -2,12 +2,15 @@ package com.securechat.protocol;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for serializing and deserializing Message objects.
  */
 public class MessageSerializer {
     private static final Gson gson = new Gson();
+    private static final Logger logger = LoggerFactory.getLogger(MessageSerializer.class);
 
     /**
      * Deserialize a JSON string into a Message object.
@@ -19,7 +22,7 @@ public class MessageSerializer {
         try {
             return gson.fromJson(json, Message.class);
         } catch (JsonSyntaxException e) {
-            System.err.println("[MessageSerializer] Failed to parse message JSON: " + e.getMessage());
+            logger.error("[MessageSerializer] Failed to parse message JSON: {}", e.getMessage(), e);
             return null;
         }
     }

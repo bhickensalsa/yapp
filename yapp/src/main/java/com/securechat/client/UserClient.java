@@ -8,6 +8,8 @@ import com.securechat.network.PeerConnection;
 import com.securechat.protocol.Message;
 import com.securechat.protocol.MessageSerializer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.libsignal.state.PreKeyBundle;
 
@@ -18,6 +20,8 @@ import java.util.Base64;
 import java.util.UUID;
 
 public class UserClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserClient.class);
 
     private final String userId;
     private final int deviceId = 1;
@@ -30,7 +34,6 @@ public class UserClient {
     private final int preKeyId;
     private final int signedPreKeyId;
 
-    // Constructor updated to accept preKey IDs (pass them from Launcher)
     public UserClient(String userId, SignalKeyStore keyStore, int preKeyId, int signedPreKeyId) {
         this.userId = userId;
         this.keyStore = keyStore;
@@ -50,7 +53,6 @@ public class UserClient {
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
 
-            // Use explicit preKeyId and signedPreKeyId here
             PreKeyBundle myBundle = PreKeyBundleBuilder.build(
                 keyStore.getLocalRegistrationId(),
                 deviceId,
@@ -64,10 +66,9 @@ public class UserClient {
             out.writeObject(myBundleJson);
             out.flush();
 
-            System.out.println("Registered prekey bundle with server as user " + userId);
+            logger.info("Registered prekey bundle with server as user {}", userId);
         } catch (Exception e) {
-            System.err.println("Failed to connect/register with server: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Failed to connect/register with server: {}", e.getMessage(), e);
         }
     }
 
@@ -76,13 +77,12 @@ public class UserClient {
      */
     public boolean establishSessionWith(String peerId) {
         try {
-            // Request peer's PreKeyBundle JSON from server
             out.writeObject("GET_PREKEY_BUNDLE:" + peerId);
             out.flush();
 
             Object responseObj = in.readObject();
             if (!(responseObj instanceof String)) {
-                System.err.println("Unexpected response from server");
+                logger.warn("Unexpected response type from server for peer {}: {}", peerId, responseObj.getClass());
                 return false;
             }
 
@@ -94,16 +94,15 @@ public class UserClient {
                 SignalProtocolAddress peerAddress = new SignalProtocolAddress(peerId, deviceId);
                 cryptoManager.initializeSession(peerAddress, peerBundle);
 
-                System.out.println("Secure session established with " + peerId);
+                logger.info("Secure session established with {}", peerId);
                 return true;
             } else if (response.startsWith("ERROR:")) {
-                System.err.println("Server error: " + response);
+                logger.error("Server error while requesting prekey bundle for {}: {}", peerId, response);
             } else {
-                System.err.println("Unexpected server response: " + response);
+                logger.warn("Unexpected server response while requesting prekey bundle for {}: {}", peerId, response);
             }
         } catch (Exception e) {
-            System.err.println("Failed to establish session with " + peerId + ": " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Failed to establish session with {}: {}", peerId, e.getMessage(), e);
         }
         return false;
     }
@@ -122,10 +121,10 @@ public class UserClient {
                 encoded
             );
             connection.send(MessageSerializer.serialize(message));
+            logger.debug("Sent message from {} to {}", userId, recipientId);
 
         } catch (Exception e) {
-            System.err.println("Error sending message: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error sending message from {} to {}: {}", userId, recipientId, e.getMessage(), e);
         }
     }
 
@@ -137,19 +136,21 @@ public class UserClient {
                     if (received == null) break;
 
                     Message msg = MessageSerializer.deserialize(received);
-                    if (msg == null) continue;
+                    if (msg == null) {
+                        logger.warn("Received invalid message format, skipping");
+                        continue;
+                    }
 
                     SignalProtocolAddress senderAddress = new SignalProtocolAddress(msg.getSender(), deviceId);
                     byte[] ciphertext = Base64.getDecoder().decode(msg.getEncryptedPayload());
                     String plaintext = cryptoManager.decryptMessage(senderAddress, ciphertext);
 
-                    System.out.println("From " + msg.getSender() + ": " + plaintext);
+                    logger.info("From {}: {}", msg.getSender(), plaintext);
                 }
             } catch (Exception e) {
-                System.err.println("Error receiving message: " + e.getMessage());
-                e.printStackTrace();
+                logger.error("Error receiving message: {}", e.getMessage(), e);
             }
-        }).start();
+        }, "UserClient-Listener-" + userId).start();
     }
 
     public SignalProtocolManager getCryptoManager() {
