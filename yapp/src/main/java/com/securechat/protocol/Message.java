@@ -1,8 +1,10 @@
 package com.securechat.protocol;
 
+import java.io.Serializable;
 import java.time.Instant;
 
-public class Message {
+public class Message implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String messageId;
     private String sender;
     private String recipient;

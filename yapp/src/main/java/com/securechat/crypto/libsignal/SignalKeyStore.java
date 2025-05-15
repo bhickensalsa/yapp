@@ -25,13 +25,13 @@ public class SignalKeyStore implements SignalProtocolStore {
     private final Map<SignalProtocolAddress, IdentityKey> identityStore = new HashMap<>();
 
     public SignalKeyStore() {
-        // Generate identity key pair and registration ID
         this.identityKeyPair = KeyHelper.generateIdentityKeyPair();
         this.registrationId = KeyHelper.generateRegistrationId(false);
         logger.info("Generated new IdentityKeyPair and registrationId {}", registrationId);
     }
 
     // === IdentityKeyStore ===
+
     @Override
     public IdentityKeyPair getIdentityKeyPair() {
         logger.debug("Retrieving IdentityKeyPair");
@@ -48,16 +48,12 @@ public class SignalKeyStore implements SignalProtocolStore {
     public boolean saveIdentity(SignalProtocolAddress address, IdentityKey identityKey) {
         logger.debug("Saving identity for address: {}", address);
         IdentityKey existing = identityStore.get(address);
-        if (existing != null && !existing.equals(identityKey)) {
+        if (existing == null || !existing.equals(identityKey)) {
             identityStore.put(address, identityKey);
-            logger.info("Identity updated for address: {}", address);
-            return true;
-        } else if (existing == null) {
-            identityStore.put(address, identityKey);
-            logger.info("New identity saved for address: {}", address);
+            logger.info("{} identity saved/updated for address: {}", (existing == null ? "New" : "Updated"), address);
             return true;
         }
-        logger.debug("Identity for address {} is unchanged", address);
+        logger.debug("Identity for address {} unchanged", address);
         return false;
     }
 
@@ -68,14 +64,16 @@ public class SignalKeyStore implements SignalProtocolStore {
     }
 
     // === PreKeyStore ===
+
     @Override
     public PreKeyRecord loadPreKey(int preKeyId) throws InvalidKeyIdException {
         logger.debug("Loading PreKey with ID: {}", preKeyId);
-        if (!preKeyStore.containsKey(preKeyId)) {
+        PreKeyRecord record = preKeyStore.get(preKeyId);
+        if (record == null) {
             logger.error("PreKey with ID {} not found", preKeyId);
             throw new InvalidKeyIdException("No such pre-key: " + preKeyId);
         }
-        return preKeyStore.get(preKeyId);
+        return record;
     }
 
     @Override
@@ -98,14 +96,16 @@ public class SignalKeyStore implements SignalProtocolStore {
     }
 
     // === SignedPreKeyStore ===
+
     @Override
     public SignedPreKeyRecord loadSignedPreKey(int signedPreKeyId) throws InvalidKeyIdException {
         logger.debug("Loading SignedPreKey with ID: {}", signedPreKeyId);
-        if (!signedPreKeyStore.containsKey(signedPreKeyId)) {
+        SignedPreKeyRecord record = signedPreKeyStore.get(signedPreKeyId);
+        if (record == null) {
             logger.error("SignedPreKey with ID {} not found", signedPreKeyId);
             throw new InvalidKeyIdException("No such signed pre-key: " + signedPreKeyId);
         }
-        return signedPreKeyStore.get(signedPreKeyId);
+        return record;
     }
 
     @Override
@@ -134,6 +134,7 @@ public class SignalKeyStore implements SignalProtocolStore {
     }
 
     // === SessionStore ===
+
     @Override
     public SessionRecord loadSession(SignalProtocolAddress address) {
         logger.debug("Loading session for address: {}", address);
@@ -163,6 +164,9 @@ public class SignalKeyStore implements SignalProtocolStore {
     public boolean containsSession(SignalProtocolAddress address) {
         boolean contains = sessionStore.containsKey(address);
         logger.debug("Contains session for address {}: {}", address, contains);
+        if (!contains) {
+            logger.debug("Current stored sessions: {}", sessionStore.keySet());
+        }
         return contains;
     }
 
@@ -178,6 +182,8 @@ public class SignalKeyStore implements SignalProtocolStore {
         sessionStore.keySet().removeIf(addr -> addr.getName().equals(name));
     }
 
+    // === IdentityKeyStore trust checking ===
+
     @Override
     public boolean isTrustedIdentity(SignalProtocolAddress address, IdentityKey identityKey, Direction direction) {
         IdentityKey trusted = identityStore.get(address);
@@ -189,5 +195,4 @@ public class SignalKeyStore implements SignalProtocolStore {
         logger.debug("Is trusted identity for {}: {}", address, trustedMatch);
         return trustedMatch;
     }
-
 }

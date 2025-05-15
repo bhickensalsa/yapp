@@ -1,9 +1,10 @@
 package com.securechat.protocol;
 
 public enum MessageType {
-    TEXT,
+    CIPHERTEXT,
     HANDSHAKE,
     KEY_BUNDLE,
     ACK,
-    ERROR
+    ERROR,
+    PREKEY
 }

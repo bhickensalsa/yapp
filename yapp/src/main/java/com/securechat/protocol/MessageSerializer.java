@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Utility class for serializing and deserializing Message objects.
+ * Utility class for serializing and deserializing Message objects. (Not used anymore due to change to Object streams)
  */
 public class MessageSerializer {
     private static final Gson gson = new Gson();

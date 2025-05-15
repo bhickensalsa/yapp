@@ -6,23 +6,23 @@ import java.net.Socket;
 public class PeerConnection {
 
     private final Socket socket;
-    private BufferedReader input;
-    private BufferedWriter output;
+    private final ObjectInputStream input;
+    private final ObjectOutputStream output;
 
     public PeerConnection(Socket socket) throws IOException {
         this.socket = socket;
-        this.input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.output = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+        this.output = new ObjectOutputStream(socket.getOutputStream());
+        output.flush();
+        this.input = new ObjectInputStream(socket.getInputStream());
     }
 
-    public void send(String data) throws IOException {
-        output.write(data);
-        output.newLine();
+    public void sendObject(Object obj) throws IOException {
+        output.writeObject(obj);
         output.flush();
     }
 
-    public String receive() throws IOException {
-        return input.readLine();
+    public Object receiveObject() throws IOException, ClassNotFoundException {
+        return input.readObject();
     }
 
     public void close() throws IOException {
@@ -33,7 +33,6 @@ public class PeerConnection {
         return socket.getRemoteSocketAddress().toString();
     }
 
-    // Add these two methods to get raw streams for ObjectInputStream/ObjectOutputStream
     public InputStream getInputStream() throws IOException {
         return socket.getInputStream();
     }
