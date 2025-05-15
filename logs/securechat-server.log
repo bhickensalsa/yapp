@@ -1,0 +1,460 @@
+2025-05-15 17:16:10 INFO  [main] com.securechat.Launcher - Initializing preKeyStore and keyStores
+2025-05-15 17:16:10 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 5824
+2025-05-15 17:16:10 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 1
+2025-05-15 17:16:10 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 1
+2025-05-15 17:16:10 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 1
+2025-05-15 17:16:10 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:16:10 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 1
+2025-05-15 17:16:10 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 1
+2025-05-15 17:16:10 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 1
+2025-05-15 17:16:10 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=1, signedPreKeyId=1
+2025-05-15 17:16:10 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 11599
+2025-05-15 17:16:10 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 1001
+2025-05-15 17:16:10 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 1001
+2025-05-15 17:16:10 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 1001
+2025-05-15 17:16:10 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:16:10 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 1002
+2025-05-15 17:16:10 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 1002
+2025-05-15 17:16:10 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 1002
+2025-05-15 17:16:10 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=1001, signedPreKeyId=1002
+2025-05-15 17:16:10 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 11230
+2025-05-15 17:16:10 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 2001
+2025-05-15 17:16:10 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 2001
+2025-05-15 17:16:10 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 2001
+2025-05-15 17:16:10 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:16:10 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 2002
+2025-05-15 17:16:10 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 2002
+2025-05-15 17:16:10 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 2002
+2025-05-15 17:16:10 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=2001, signedPreKeyId=2002
+2025-05-15 17:16:10 INFO  [main] com.securechat.Launcher - Server started on port 8888
+2025-05-15 17:16:10 INFO  [ServerThread] com.securechat.server.Server - SecureChat server started on port 8888
+2025-05-15 17:16:12 INFO  [ServerThread] com.securechat.server.Server - Accepted connection from /127.0.0.1:55934
+2025-05-15 17:16:12 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 11599
+2025-05-15 17:16:12 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Building PreKeyBundle with registrationId=11599, deviceId=1, preKeyId=1001, signedPreKeyId=1002
+2025-05-15 17:16:12 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading PreKey with ID: 1001
+2025-05-15 17:16:12 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded PreKeyRecord for id 1001
+2025-05-15 17:16:12 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading SignedPreKey with ID: 1002
+2025-05-15 17:16:12 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded SignedPreKeyRecord for id 1002
+2025-05-15 17:16:12 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:16:12 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Using identity public key for PreKeyBundle
+2025-05-15 17:16:12 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - PreKeyBundle successfully built
+2025-05-15 17:16:12 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Converting PreKeyBundle to DTO for registrationId=11599, deviceId=1
+2025-05-15 17:16:12 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundleDTO created successfully
+2025-05-15 17:16:12 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serializing PreKeyBundleDTO to JSON
+2025-05-15 17:16:12 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serialization to JSON completed
+2025-05-15 17:16:12 INFO  [main] com.securechat.client.UserClient - Registered prekey bundle with server as user alice
+2025-05-15 17:16:12 DEBUG [pool-1-thread-1] com.securechat.server.Server - Received registration from peer: alice
+2025-05-15 17:16:12 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Deserializing JSON to PreKeyBundleDTO
+2025-05-15 17:16:12 INFO  [ServerThread] com.securechat.server.Server - Accepted connection from /127.0.0.1:55935
+2025-05-15 17:16:12 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 11230
+2025-05-15 17:16:12 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Building PreKeyBundle with registrationId=11230, deviceId=1, preKeyId=2001, signedPreKeyId=2002
+2025-05-15 17:16:12 INFO  [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Deserialization from JSON successful
+2025-05-15 17:16:12 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading PreKey with ID: 2001
+2025-05-15 17:16:12 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded PreKeyRecord for id 2001
+2025-05-15 17:16:12 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading SignedPreKey with ID: 2002
+2025-05-15 17:16:12 INFO  [pool-1-thread-1] com.securechat.server.Server - Registered prekey bundle for peer: alice
+2025-05-15 17:16:12 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded SignedPreKeyRecord for id 2002
+2025-05-15 17:16:12 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Converting DTO to PreKeyBundle for registrationId=11599, deviceId=1
+2025-05-15 17:16:12 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:16:12 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Using identity public key for PreKeyBundle
+2025-05-15 17:16:12 INFO  [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundle conversion successful
+2025-05-15 17:16:12 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - PreKeyBundle successfully built
+2025-05-15 17:16:12 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Converting PreKeyBundle to DTO for registrationId=11230, deviceId=1
+2025-05-15 17:16:12 DEBUG [pool-1-thread-1] c.s.c.l.SignalProtocolManager - Initializing session with remote address: alice:1
+2025-05-15 17:16:12 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundleDTO created successfully
+2025-05-15 17:16:12 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serializing PreKeyBundleDTO to JSON
+2025-05-15 17:16:12 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serialization to JSON completed
+2025-05-15 17:16:12 INFO  [main] com.securechat.client.UserClient - Registered prekey bundle with server as user bob
+2025-05-15 17:16:12 DEBUG [pool-1-thread-2] com.securechat.server.Server - Received registration from peer: bob
+2025-05-15 17:16:12 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Deserializing JSON to PreKeyBundleDTO
+2025-05-15 17:16:12 WARN  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - No trusted identity for address alice:1, trusting first seen key
+2025-05-15 17:16:12 INFO  [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Deserialization from JSON successful
+2025-05-15 17:16:12 INFO  [pool-1-thread-2] com.securechat.server.Server - Registered prekey bundle for peer: bob
+2025-05-15 17:16:12 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Converting DTO to PreKeyBundle for registrationId=11230, deviceId=1
+2025-05-15 17:16:12 INFO  [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundle conversion successful
+2025-05-15 17:16:12 DEBUG [pool-1-thread-2] c.s.c.l.SignalProtocolManager - Initializing session with remote address: bob:1
+2025-05-15 17:16:12 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Loading session for address: alice:1
+2025-05-15 17:16:12 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:16:12 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 5824
+2025-05-15 17:16:12 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Saving identity for address: alice:1
+2025-05-15 17:16:12 INFO  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - New identity saved for address: alice:1
+2025-05-15 17:16:12 INFO  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Stored session for address: alice:1
+2025-05-15 17:16:12 INFO  [pool-1-thread-1] c.s.c.l.SignalProtocolManager - Session initialized with alice:1
+2025-05-15 17:16:12 WARN  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - No trusted identity for address bob:1, trusting first seen key
+2025-05-15 17:16:12 INFO  [pool-1-thread-1] com.securechat.server.Server - Secure session established with peer: alice
+2025-05-15 17:16:12 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Loading session for address: bob:1
+2025-05-15 17:16:12 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:16:12 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 5824
+2025-05-15 17:16:12 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Saving identity for address: bob:1
+2025-05-15 17:16:12 INFO  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - New identity saved for address: bob:1
+2025-05-15 17:16:12 INFO  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Stored session for address: bob:1
+2025-05-15 17:16:12 INFO  [pool-1-thread-2] c.s.c.l.SignalProtocolManager - Session initialized with bob:1
+2025-05-15 17:16:12 INFO  [pool-1-thread-2] com.securechat.server.Server - Secure session established with peer: bob
+2025-05-15 17:19:21 INFO  [main] com.securechat.Launcher - Initializing preKeyStore and keyStores
+2025-05-15 17:19:21 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 3447
+2025-05-15 17:19:21 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 1
+2025-05-15 17:19:21 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 1
+2025-05-15 17:19:21 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 1
+2025-05-15 17:19:21 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:19:21 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 1
+2025-05-15 17:19:21 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 1
+2025-05-15 17:19:21 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 1
+2025-05-15 17:19:21 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=1, signedPreKeyId=1
+2025-05-15 17:19:21 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 14005
+2025-05-15 17:19:21 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 1001
+2025-05-15 17:19:21 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 1001
+2025-05-15 17:19:21 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 1001
+2025-05-15 17:19:21 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:19:21 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 1002
+2025-05-15 17:19:21 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 1002
+2025-05-15 17:19:21 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 1002
+2025-05-15 17:19:21 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=1001, signedPreKeyId=1002
+2025-05-15 17:19:21 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 1948
+2025-05-15 17:19:21 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 2001
+2025-05-15 17:19:21 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 2001
+2025-05-15 17:19:21 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 2001
+2025-05-15 17:19:21 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:19:21 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 2002
+2025-05-15 17:19:21 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 2002
+2025-05-15 17:19:21 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 2002
+2025-05-15 17:19:21 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=2001, signedPreKeyId=2002
+2025-05-15 17:19:21 INFO  [main] com.securechat.Launcher - Server started on port 8888
+2025-05-15 17:19:21 INFO  [ServerThread] com.securechat.server.Server - SecureChat server started on port 8888
+2025-05-15 17:19:23 INFO  [ServerThread] com.securechat.server.Server - Accepted connection from /127.0.0.1:55946
+2025-05-15 17:19:23 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 14005
+2025-05-15 17:19:23 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Building PreKeyBundle with registrationId=14005, deviceId=1, preKeyId=1001, signedPreKeyId=1002
+2025-05-15 17:19:23 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading PreKey with ID: 1001
+2025-05-15 17:19:23 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded PreKeyRecord for id 1001
+2025-05-15 17:19:23 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading SignedPreKey with ID: 1002
+2025-05-15 17:19:23 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded SignedPreKeyRecord for id 1002
+2025-05-15 17:19:23 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:19:23 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Using identity public key for PreKeyBundle
+2025-05-15 17:19:23 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - PreKeyBundle successfully built
+2025-05-15 17:19:23 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Converting PreKeyBundle to DTO for registrationId=14005, deviceId=1
+2025-05-15 17:19:23 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundleDTO created successfully
+2025-05-15 17:19:23 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serializing PreKeyBundleDTO to JSON
+2025-05-15 17:19:23 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serialization to JSON completed
+2025-05-15 17:19:23 INFO  [main] com.securechat.client.UserClient - Registered prekey bundle with server as user alice
+2025-05-15 17:19:23 DEBUG [pool-1-thread-1] com.securechat.server.Server - Received registration from peer: alice
+2025-05-15 17:19:23 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Deserializing JSON to PreKeyBundleDTO
+2025-05-15 17:19:23 INFO  [ServerThread] com.securechat.server.Server - Accepted connection from /127.0.0.1:55947
+2025-05-15 17:19:23 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 1948
+2025-05-15 17:19:23 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Building PreKeyBundle with registrationId=1948, deviceId=1, preKeyId=2001, signedPreKeyId=2002
+2025-05-15 17:19:23 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading PreKey with ID: 2001
+2025-05-15 17:19:23 INFO  [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Deserialization from JSON successful
+2025-05-15 17:19:23 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded PreKeyRecord for id 2001
+2025-05-15 17:19:23 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading SignedPreKey with ID: 2002
+2025-05-15 17:19:23 INFO  [pool-1-thread-1] com.securechat.server.Server - Registered prekey bundle for peer: alice
+2025-05-15 17:19:23 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded SignedPreKeyRecord for id 2002
+2025-05-15 17:19:23 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Converting DTO to PreKeyBundle for registrationId=14005, deviceId=1
+2025-05-15 17:19:23 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:19:23 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Using identity public key for PreKeyBundle
+2025-05-15 17:19:23 INFO  [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundle conversion successful
+2025-05-15 17:19:23 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - PreKeyBundle successfully built
+2025-05-15 17:19:23 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Converting PreKeyBundle to DTO for registrationId=1948, deviceId=1
+2025-05-15 17:19:23 DEBUG [pool-1-thread-1] c.s.c.l.SignalProtocolManager - Initializing session with remote address: alice:1
+2025-05-15 17:19:23 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundleDTO created successfully
+2025-05-15 17:19:23 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serializing PreKeyBundleDTO to JSON
+2025-05-15 17:19:23 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serialization to JSON completed
+2025-05-15 17:19:23 INFO  [main] com.securechat.client.UserClient - Registered prekey bundle with server as user bob
+2025-05-15 17:19:23 DEBUG [pool-1-thread-2] com.securechat.server.Server - Received registration from peer: bob
+2025-05-15 17:19:23 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Deserializing JSON to PreKeyBundleDTO
+2025-05-15 17:19:23 INFO  [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Deserialization from JSON successful
+2025-05-15 17:19:23 WARN  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - No trusted identity for address alice:1, trusting first seen key
+2025-05-15 17:19:23 INFO  [pool-1-thread-2] com.securechat.server.Server - Registered prekey bundle for peer: bob
+2025-05-15 17:19:23 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Converting DTO to PreKeyBundle for registrationId=1948, deviceId=1
+2025-05-15 17:19:23 INFO  [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundle conversion successful
+2025-05-15 17:19:23 DEBUG [pool-1-thread-2] c.s.c.l.SignalProtocolManager - Initializing session with remote address: bob:1
+2025-05-15 17:19:23 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Loading session for address: alice:1
+2025-05-15 17:19:23 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:19:23 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 3447
+2025-05-15 17:19:23 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Saving identity for address: alice:1
+2025-05-15 17:19:23 INFO  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - New identity saved for address: alice:1
+2025-05-15 17:19:23 INFO  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Stored session for address: alice:1
+2025-05-15 17:19:23 INFO  [pool-1-thread-1] c.s.c.l.SignalProtocolManager - Session initialized with alice:1
+2025-05-15 17:19:23 WARN  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - No trusted identity for address bob:1, trusting first seen key
+2025-05-15 17:19:23 INFO  [pool-1-thread-1] com.securechat.server.Server - Secure session established with peer: alice
+2025-05-15 17:19:23 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Loading session for address: bob:1
+2025-05-15 17:19:23 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:19:23 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 3447
+2025-05-15 17:19:23 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Saving identity for address: bob:1
+2025-05-15 17:19:23 INFO  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - New identity saved for address: bob:1
+2025-05-15 17:19:23 INFO  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Stored session for address: bob:1
+2025-05-15 17:19:23 INFO  [pool-1-thread-2] c.s.c.l.SignalProtocolManager - Session initialized with bob:1
+2025-05-15 17:19:23 INFO  [pool-1-thread-2] com.securechat.server.Server - Secure session established with peer: bob
+2025-05-15 17:20:42.972 INFO  [main] com.securechat.Launcher - Initializing preKeyStore and keyStores
+2025-05-15 17:20:43.039 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 1703
+2025-05-15 17:20:43.041 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 1
+2025-05-15 17:20:43.063 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 1
+2025-05-15 17:20:43.064 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 1
+2025-05-15 17:20:43.064 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:20:43.065 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 1
+2025-05-15 17:20:43.070 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 1
+2025-05-15 17:20:43.070 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 1
+2025-05-15 17:20:43.071 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=1, signedPreKeyId=1
+2025-05-15 17:20:43.071 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 9347
+2025-05-15 17:20:43.072 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 1001
+2025-05-15 17:20:43.072 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 1001
+2025-05-15 17:20:43.073 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 1001
+2025-05-15 17:20:43.073 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:20:43.073 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 1002
+2025-05-15 17:20:43.075 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 1002
+2025-05-15 17:20:43.075 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 1002
+2025-05-15 17:20:43.075 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=1001, signedPreKeyId=1002
+2025-05-15 17:20:43.076 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 10254
+2025-05-15 17:20:43.076 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 2001
+2025-05-15 17:20:43.076 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 2001
+2025-05-15 17:20:43.076 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 2001
+2025-05-15 17:20:43.077 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:20:43.077 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 2002
+2025-05-15 17:20:43.078 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 2002
+2025-05-15 17:20:43.078 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 2002
+2025-05-15 17:20:43.078 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=2001, signedPreKeyId=2002
+2025-05-15 17:20:43.080 INFO  [main] com.securechat.Launcher - Server started on port 8888
+2025-05-15 17:20:43.083 INFO  [ServerThread] com.securechat.server.Server - SecureChat server started on port 8888
+2025-05-15 17:20:45.095 INFO  [ServerThread] com.securechat.server.Server - Accepted connection from /127.0.0.1:55955
+2025-05-15 17:20:45.104 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 9347
+2025-05-15 17:20:45.106 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Building PreKeyBundle with registrationId=9347, deviceId=1, preKeyId=1001, signedPreKeyId=1002
+2025-05-15 17:20:45.107 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading PreKey with ID: 1001
+2025-05-15 17:20:45.107 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded PreKeyRecord for id 1001
+2025-05-15 17:20:45.107 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading SignedPreKey with ID: 1002
+2025-05-15 17:20:45.107 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded SignedPreKeyRecord for id 1002
+2025-05-15 17:20:45.107 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:20:45.108 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Using identity public key for PreKeyBundle
+2025-05-15 17:20:45.108 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - PreKeyBundle successfully built
+2025-05-15 17:20:45.109 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Converting PreKeyBundle to DTO for registrationId=9347, deviceId=1
+2025-05-15 17:20:45.110 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundleDTO created successfully
+2025-05-15 17:20:45.111 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serializing PreKeyBundleDTO to JSON
+2025-05-15 17:20:45.135 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serialization to JSON completed
+2025-05-15 17:20:45.138 DEBUG [pool-1-thread-1] com.securechat.server.Server - Received registration from peer: alice
+2025-05-15 17:20:45.138 INFO  [main] com.securechat.client.UserClient - Registered prekey bundle with server as user alice
+2025-05-15 17:20:45.138 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Deserializing JSON to PreKeyBundleDTO
+2025-05-15 17:20:45.139 INFO  [ServerThread] com.securechat.server.Server - Accepted connection from /127.0.0.1:55956
+2025-05-15 17:20:45.140 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 10254
+2025-05-15 17:20:45.140 INFO  [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Deserialization from JSON successful
+2025-05-15 17:20:45.140 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Building PreKeyBundle with registrationId=10254, deviceId=1, preKeyId=2001, signedPreKeyId=2002
+2025-05-15 17:20:45.140 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading PreKey with ID: 2001
+2025-05-15 17:20:45.140 INFO  [pool-1-thread-1] com.securechat.server.Server - Registered prekey bundle for peer: alice
+2025-05-15 17:20:45.141 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded PreKeyRecord for id 2001
+2025-05-15 17:20:45.141 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Converting DTO to PreKeyBundle for registrationId=9347, deviceId=1
+2025-05-15 17:20:45.141 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading SignedPreKey with ID: 2002
+2025-05-15 17:20:45.141 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded SignedPreKeyRecord for id 2002
+2025-05-15 17:20:45.141 INFO  [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundle conversion successful
+2025-05-15 17:20:45.141 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:20:45.141 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Using identity public key for PreKeyBundle
+2025-05-15 17:20:45.142 DEBUG [pool-1-thread-1] c.s.c.l.SignalProtocolManager - Initializing session with remote address: alice:1
+2025-05-15 17:20:45.142 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - PreKeyBundle successfully built
+2025-05-15 17:20:45.142 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Converting PreKeyBundle to DTO for registrationId=10254, deviceId=1
+2025-05-15 17:20:45.142 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundleDTO created successfully
+2025-05-15 17:20:45.142 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serializing PreKeyBundleDTO to JSON
+2025-05-15 17:20:45.143 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serialization to JSON completed
+2025-05-15 17:20:45.143 INFO  [main] com.securechat.client.UserClient - Registered prekey bundle with server as user bob
+2025-05-15 17:20:45.143 DEBUG [pool-1-thread-2] com.securechat.server.Server - Received registration from peer: bob
+2025-05-15 17:20:45.144 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Deserializing JSON to PreKeyBundleDTO
+2025-05-15 17:20:45.145 WARN  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - No trusted identity for address alice:1, trusting first seen key
+2025-05-15 17:20:45.145 INFO  [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Deserialization from JSON successful
+2025-05-15 17:20:45.145 INFO  [pool-1-thread-2] com.securechat.server.Server - Registered prekey bundle for peer: bob
+2025-05-15 17:20:45.145 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Converting DTO to PreKeyBundle for registrationId=10254, deviceId=1
+2025-05-15 17:20:45.146 INFO  [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundle conversion successful
+2025-05-15 17:20:45.146 DEBUG [pool-1-thread-2] c.s.c.l.SignalProtocolManager - Initializing session with remote address: bob:1
+2025-05-15 17:20:45.148 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Loading session for address: alice:1
+2025-05-15 17:20:45.157 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:20:45.182 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 1703
+2025-05-15 17:20:45.182 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Saving identity for address: alice:1
+2025-05-15 17:20:45.183 INFO  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - New identity saved for address: alice:1
+2025-05-15 17:20:45.183 INFO  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Stored session for address: alice:1
+2025-05-15 17:20:45.183 INFO  [pool-1-thread-1] c.s.c.l.SignalProtocolManager - Session initialized with alice:1
+2025-05-15 17:20:45.183 WARN  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - No trusted identity for address bob:1, trusting first seen key
+2025-05-15 17:20:45.183 INFO  [pool-1-thread-1] com.securechat.server.Server - Secure session established with peer: alice
+2025-05-15 17:20:45.184 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Loading session for address: bob:1
+2025-05-15 17:20:45.185 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:20:45.186 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 1703
+2025-05-15 17:20:45.187 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Saving identity for address: bob:1
+2025-05-15 17:20:45.187 INFO  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - New identity saved for address: bob:1
+2025-05-15 17:20:45.187 INFO  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Stored session for address: bob:1
+2025-05-15 17:20:45.187 INFO  [pool-1-thread-2] c.s.c.l.SignalProtocolManager - Session initialized with bob:1
+2025-05-15 17:20:45.187 INFO  [pool-1-thread-2] com.securechat.server.Server - Secure session established with peer: bob
+2025-05-15 17:21:19.497 INFO  [main] com.securechat.Launcher - Initializing preKeyStore and keyStores
+2025-05-15 17:21:19.562 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 15477
+2025-05-15 17:21:19.565 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 1
+2025-05-15 17:21:19.587 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 1
+2025-05-15 17:21:19.587 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 1
+2025-05-15 17:21:19.587 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:21:19.587 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 1
+2025-05-15 17:21:19.592 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 1
+2025-05-15 17:21:19.592 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 1
+2025-05-15 17:21:19.592 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=1, signedPreKeyId=1
+2025-05-15 17:21:19.593 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 4
+2025-05-15 17:21:19.593 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 1001
+2025-05-15 17:21:19.594 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 1001
+2025-05-15 17:21:19.594 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 1001
+2025-05-15 17:21:19.595 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:21:19.595 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 1002
+2025-05-15 17:21:19.596 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 1002
+2025-05-15 17:21:19.596 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 1002
+2025-05-15 17:21:19.596 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=1001, signedPreKeyId=1002
+2025-05-15 17:21:19.597 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 4755
+2025-05-15 17:21:19.597 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 2001
+2025-05-15 17:21:19.598 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 2001
+2025-05-15 17:21:19.598 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 2001
+2025-05-15 17:21:19.598 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:21:19.598 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 2002
+2025-05-15 17:21:19.599 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 2002
+2025-05-15 17:21:19.600 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 2002
+2025-05-15 17:21:19.600 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=2001, signedPreKeyId=2002
+2025-05-15 17:21:19.603 INFO  [main] com.securechat.Launcher - Server started on port 8888
+2025-05-15 17:21:19.607 INFO  [ServerThread] com.securechat.server.Server - SecureChat server started on port 8888
+2025-05-15 17:21:21.616 INFO  [ServerThread] com.securechat.server.Server - Accepted connection from /127.0.0.1:55961
+2025-05-15 17:21:21.626 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 4
+2025-05-15 17:21:21.628 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Building PreKeyBundle with registrationId=4, deviceId=1, preKeyId=1001, signedPreKeyId=1002
+2025-05-15 17:21:21.629 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading PreKey with ID: 1001
+2025-05-15 17:21:21.629 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded PreKeyRecord for id 1001
+2025-05-15 17:21:21.629 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading SignedPreKey with ID: 1002
+2025-05-15 17:21:21.629 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded SignedPreKeyRecord for id 1002
+2025-05-15 17:21:21.630 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:21:21.630 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Using identity public key for PreKeyBundle
+2025-05-15 17:21:21.630 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - PreKeyBundle successfully built
+2025-05-15 17:21:21.631 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Converting PreKeyBundle to DTO for registrationId=4, deviceId=1
+2025-05-15 17:21:21.631 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundleDTO created successfully
+2025-05-15 17:21:21.632 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serializing PreKeyBundleDTO to JSON
+2025-05-15 17:21:21.658 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serialization to JSON completed
+2025-05-15 17:21:21.662 INFO  [main] com.securechat.client.UserClient - Registered prekey bundle with server as user alice
+2025-05-15 17:21:21.662 DEBUG [pool-1-thread-1] com.securechat.server.Server - Received registration from peer: alice
+2025-05-15 17:21:21.662 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Deserializing JSON to PreKeyBundleDTO
+2025-05-15 17:21:21.663 INFO  [ServerThread] com.securechat.server.Server - Accepted connection from /127.0.0.1:55962
+2025-05-15 17:21:21.663 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 4755
+2025-05-15 17:21:21.664 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Building PreKeyBundle with registrationId=4755, deviceId=1, preKeyId=2001, signedPreKeyId=2002
+2025-05-15 17:21:21.664 INFO  [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Deserialization from JSON successful
+2025-05-15 17:21:21.664 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading PreKey with ID: 2001
+2025-05-15 17:21:21.665 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded PreKeyRecord for id 2001
+2025-05-15 17:21:21.665 INFO  [pool-1-thread-1] com.securechat.server.Server - Registered prekey bundle for peer: alice
+2025-05-15 17:21:21.665 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading SignedPreKey with ID: 2002
+2025-05-15 17:21:21.665 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Converting DTO to PreKeyBundle for registrationId=4, deviceId=1
+2025-05-15 17:21:21.665 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded SignedPreKeyRecord for id 2002
+2025-05-15 17:21:21.666 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:21:21.666 INFO  [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundle conversion successful
+2025-05-15 17:21:21.666 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Using identity public key for PreKeyBundle
+2025-05-15 17:21:21.666 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - PreKeyBundle successfully built
+2025-05-15 17:21:21.666 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Converting PreKeyBundle to DTO for registrationId=4755, deviceId=1
+2025-05-15 17:21:21.667 DEBUG [pool-1-thread-1] c.s.c.l.SignalProtocolManager - Initializing session with remote address: alice:1
+2025-05-15 17:21:21.667 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundleDTO created successfully
+2025-05-15 17:21:21.667 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serializing PreKeyBundleDTO to JSON
+2025-05-15 17:21:21.668 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serialization to JSON completed
+2025-05-15 17:21:21.669 INFO  [main] com.securechat.client.UserClient - Registered prekey bundle with server as user bob
+2025-05-15 17:21:21.669 DEBUG [pool-1-thread-2] com.securechat.server.Server - Received registration from peer: bob
+2025-05-15 17:21:21.669 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Deserializing JSON to PreKeyBundleDTO
+2025-05-15 17:21:21.669 WARN  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - No trusted identity for address alice:1, trusting first seen key
+2025-05-15 17:21:21.670 INFO  [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Deserialization from JSON successful
+2025-05-15 17:21:21.670 INFO  [pool-1-thread-2] com.securechat.server.Server - Registered prekey bundle for peer: bob
+2025-05-15 17:21:21.670 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Converting DTO to PreKeyBundle for registrationId=4755, deviceId=1
+2025-05-15 17:21:21.671 INFO  [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundle conversion successful
+2025-05-15 17:21:21.671 DEBUG [pool-1-thread-2] c.s.c.l.SignalProtocolManager - Initializing session with remote address: bob:1
+2025-05-15 17:21:21.673 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Loading session for address: alice:1
+2025-05-15 17:21:21.682 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:21:21.707 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 15477
+2025-05-15 17:21:21.707 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Saving identity for address: alice:1
+2025-05-15 17:21:21.707 INFO  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - New identity saved for address: alice:1
+2025-05-15 17:21:21.707 INFO  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Stored session for address: alice:1
+2025-05-15 17:21:21.708 INFO  [pool-1-thread-1] c.s.c.l.SignalProtocolManager - Session initialized with alice:1
+2025-05-15 17:21:21.708 WARN  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - No trusted identity for address bob:1, trusting first seen key
+2025-05-15 17:21:21.708 INFO  [pool-1-thread-1] com.securechat.server.Server - Secure session established with peer: alice
+2025-05-15 17:21:21.708 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Loading session for address: bob:1
+2025-05-15 17:21:21.709 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:21:21.711 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 15477
+2025-05-15 17:21:21.711 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Saving identity for address: bob:1
+2025-05-15 17:21:21.712 INFO  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - New identity saved for address: bob:1
+2025-05-15 17:21:21.712 INFO  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Stored session for address: bob:1
+2025-05-15 17:21:21.712 INFO  [pool-1-thread-2] c.s.c.l.SignalProtocolManager - Session initialized with bob:1
+2025-05-15 17:21:21.712 INFO  [pool-1-thread-2] com.securechat.server.Server - Secure session established with peer: bob
+2025-05-15 17:23:13.332 INFO  [main] com.securechat.Launcher - Initializing preKeyStore and keyStores
+2025-05-15 17:23:13.397 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 14866
+2025-05-15 17:23:13.399 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 1
+2025-05-15 17:23:13.420 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 1
+2025-05-15 17:23:13.420 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 1
+2025-05-15 17:23:13.421 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:23:13.421 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 1
+2025-05-15 17:23:13.425 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 1
+2025-05-15 17:23:13.426 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 1
+2025-05-15 17:23:13.426 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=1, signedPreKeyId=1
+2025-05-15 17:23:13.427 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 4691
+2025-05-15 17:23:13.427 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 1001
+2025-05-15 17:23:13.428 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 1001
+2025-05-15 17:23:13.428 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 1001
+2025-05-15 17:23:13.428 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:23:13.428 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 1002
+2025-05-15 17:23:13.429 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 1002
+2025-05-15 17:23:13.430 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 1002
+2025-05-15 17:23:13.430 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=1001, signedPreKeyId=1002
+2025-05-15 17:23:13.431 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Generated new IdentityKeyPair and registrationId 9902
+2025-05-15 17:23:13.431 DEBUG [main] com.securechat.crypto.KeyManager - Generating PreKeyRecord with id 2001
+2025-05-15 17:23:13.431 INFO  [main] com.securechat.crypto.KeyManager - Generated PreKeyRecord with id 2001
+2025-05-15 17:23:13.432 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored PreKey with ID: 2001
+2025-05-15 17:23:13.432 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:23:13.433 DEBUG [main] com.securechat.crypto.KeyManager - Generating SignedPreKeyRecord with id 2002
+2025-05-15 17:23:13.434 INFO  [main] com.securechat.crypto.KeyManager - Generated SignedPreKeyRecord with id 2002
+2025-05-15 17:23:13.434 INFO  [main] c.s.crypto.libsignal.SignalKeyStore - Stored SignedPreKey with ID: 2002
+2025-05-15 17:23:13.434 DEBUG [main] com.securechat.Launcher - Initialized keys: preKeyId=2001, signedPreKeyId=2002
+2025-05-15 17:23:13.436 INFO  [main] com.securechat.Launcher - Server started on port 8888
+2025-05-15 17:23:13.439 INFO  [ServerThread] com.securechat.server.Server - SecureChat server started on port 8888
+2025-05-15 17:23:15.454 INFO  [ServerThread] com.securechat.server.Server - Accepted connection from /127.0.0.1:55969
+2025-05-15 17:23:15.459 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 4691
+2025-05-15 17:23:15.460 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Building PreKeyBundle with registrationId=4691, deviceId=1, preKeyId=1001, signedPreKeyId=1002
+2025-05-15 17:23:15.461 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading PreKey with ID: 1001
+2025-05-15 17:23:15.461 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded PreKeyRecord for id 1001
+2025-05-15 17:23:15.461 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading SignedPreKey with ID: 1002
+2025-05-15 17:23:15.461 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded SignedPreKeyRecord for id 1002
+2025-05-15 17:23:15.462 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:23:15.462 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Using identity public key for PreKeyBundle
+2025-05-15 17:23:15.462 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - PreKeyBundle successfully built
+2025-05-15 17:23:15.463 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Converting PreKeyBundle to DTO for registrationId=4691, deviceId=1
+2025-05-15 17:23:15.463 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundleDTO created successfully
+2025-05-15 17:23:15.463 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serializing PreKeyBundleDTO to JSON
+2025-05-15 17:23:15.491 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serialization to JSON completed
+2025-05-15 17:23:15.494 INFO  [main] com.securechat.client.UserClient - Registered prekey bundle with server as user alice
+2025-05-15 17:23:15.494 DEBUG [pool-1-thread-1] com.securechat.server.Server - Received registration from peer: alice
+2025-05-15 17:23:15.494 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Deserializing JSON to PreKeyBundleDTO
+2025-05-15 17:23:15.495 INFO  [ServerThread] com.securechat.server.Server - Accepted connection from /127.0.0.1:55970
+2025-05-15 17:23:15.495 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 9902
+2025-05-15 17:23:15.496 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Building PreKeyBundle with registrationId=9902, deviceId=1, preKeyId=2001, signedPreKeyId=2002
+2025-05-15 17:23:15.496 INFO  [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Deserialization from JSON successful
+2025-05-15 17:23:15.496 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading PreKey with ID: 2001
+2025-05-15 17:23:15.496 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded PreKeyRecord for id 2001
+2025-05-15 17:23:15.496 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Loading SignedPreKey with ID: 2002
+2025-05-15 17:23:15.496 INFO  [pool-1-thread-1] com.securechat.server.Server - Registered prekey bundle for peer: alice
+2025-05-15 17:23:15.496 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - Loaded SignedPreKeyRecord for id 2002
+2025-05-15 17:23:15.497 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - Converting DTO to PreKeyBundle for registrationId=4691, deviceId=1
+2025-05-15 17:23:15.497 DEBUG [main] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:23:15.497 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - Using identity public key for PreKeyBundle
+2025-05-15 17:23:15.497 INFO  [pool-1-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundle conversion successful
+2025-05-15 17:23:15.497 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - PreKeyBundle successfully built
+2025-05-15 17:23:15.498 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Converting PreKeyBundle to DTO for registrationId=9902, deviceId=1
+2025-05-15 17:23:15.498 DEBUG [pool-1-thread-1] c.s.c.l.SignalProtocolManager - Initializing session with remote address: alice:1
+2025-05-15 17:23:15.498 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundleDTO created successfully
+2025-05-15 17:23:15.498 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serializing PreKeyBundleDTO to JSON
+2025-05-15 17:23:15.499 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - Serialization to JSON completed
+2025-05-15 17:23:15.499 INFO  [main] com.securechat.client.UserClient - Registered prekey bundle with server as user bob
+2025-05-15 17:23:15.499 DEBUG [pool-1-thread-2] com.securechat.server.Server - Received registration from peer: bob
+2025-05-15 17:23:15.500 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Deserializing JSON to PreKeyBundleDTO
+2025-05-15 17:23:15.500 INFO  [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Deserialization from JSON successful
+2025-05-15 17:23:15.501 INFO  [pool-1-thread-2] com.securechat.server.Server - Registered prekey bundle for peer: bob
+2025-05-15 17:23:15.501 WARN  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - No trusted identity for address alice:1, trusting first seen key
+2025-05-15 17:23:15.501 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - Converting DTO to PreKeyBundle for registrationId=9902, deviceId=1
+2025-05-15 17:23:15.501 INFO  [pool-1-thread-2] c.s.crypto.libsignal.PreKeyBundleDTO - PreKeyBundle conversion successful
+2025-05-15 17:23:15.502 DEBUG [pool-1-thread-2] c.s.c.l.SignalProtocolManager - Initializing session with remote address: bob:1
+2025-05-15 17:23:15.504 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Loading session for address: alice:1
+2025-05-15 17:23:15.515 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:23:15.536 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 14866
+2025-05-15 17:23:15.537 DEBUG [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Saving identity for address: alice:1
+2025-05-15 17:23:15.537 INFO  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - New identity saved for address: alice:1
+2025-05-15 17:23:15.537 INFO  [pool-1-thread-1] c.s.crypto.libsignal.SignalKeyStore - Stored session for address: alice:1
+2025-05-15 17:23:15.537 INFO  [pool-1-thread-1] c.s.c.l.SignalProtocolManager - Session initialized with alice:1
+2025-05-15 17:23:15.537 WARN  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - No trusted identity for address bob:1, trusting first seen key
+2025-05-15 17:23:15.538 INFO  [pool-1-thread-1] com.securechat.server.Server - Secure session established with peer: alice
+2025-05-15 17:23:15.538 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Loading session for address: bob:1
+2025-05-15 17:23:15.539 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Retrieving IdentityKeyPair
+2025-05-15 17:23:15.540 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Retrieving local registration ID: 14866
+2025-05-15 17:23:15.540 DEBUG [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Saving identity for address: bob:1
+2025-05-15 17:23:15.541 INFO  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - New identity saved for address: bob:1
+2025-05-15 17:23:15.541 INFO  [pool-1-thread-2] c.s.crypto.libsignal.SignalKeyStore - Stored session for address: bob:1
+2025-05-15 17:23:15.541 INFO  [pool-1-thread-2] c.s.c.l.SignalProtocolManager - Session initialized with bob:1
+2025-05-15 17:23:15.541 INFO  [pool-1-thread-2] com.securechat.server.Server - Secure session established with peer: bob

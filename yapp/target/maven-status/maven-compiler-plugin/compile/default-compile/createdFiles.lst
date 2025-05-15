@@ -15,7 +15,6 @@ com\securechat\gui\ChatWindow.class
 com\securechat\store\FilePreKeyStore.class
 com\securechat\protocol\Message.class
 com\securechat\server\Server.class
-com\securechat\utils\Logger.class
 com\securechat\crypto\libsignal\SignalProtocolManager.class
 com\securechat\protocol\MessageSerializer.class
 com\securechat\crypto\libsignal\SignalKeyStore.class
@@ -23,4 +22,3 @@ com\securechat\crypto\libsignal\PreKeyBundleDTO.class
 com\securechat\model\UserProfile.class
 com\securechat\network\MessageRouter.class
 com\securechat\crypto\RSAEncryptor.class
-com\securechat\utils\ConsoleLogger.class
