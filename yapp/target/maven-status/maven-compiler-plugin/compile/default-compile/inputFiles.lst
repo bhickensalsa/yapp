@@ -1,5 +1,7 @@
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\network\PeerConnection.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\crypto\EncryptionManager.java
+C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\protocol\PacketType.java
+C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\protocol\Packet.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\model\KeyBundle.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\server\ClientManager.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\crypto\Encryptor.java

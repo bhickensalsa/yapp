@@ -13,16 +13,23 @@ import org.slf4j.LoggerFactory;
 public class Launcher {
 
     private static final Logger logger = LoggerFactory.getLogger(Launcher.class);
-    private static int SERVER_SIGNED_PREKEY_ID = 1;
-    private static int SERVER_PREKEY_ID = 1;
+
+    private static final int SERVER_SIGNED_PREKEY_ID = 1;
+    private static final int SERVER_PREKEY_ID = 1;
+
+    // Define separate ports for message and preKey sockets
+    private static final int MESSAGE_PORT = 8888;
+    private static final int PREKEY_PORT = 9999;
 
     public static void main(String[] args) {
 
         int alicePreKeyId = 1001;
         int aliceSignedPreKeyId = 1002;
+        int aliceDeviceId = 1;
 
         int bobPreKeyId = 2001;
         int bobSignedPreKeyId = 2002;
+        int bobDeviceId = 2;
 
         logger.info("Initializing preKeyStore and keyStores");
 
@@ -36,32 +43,45 @@ public class Launcher {
         SignalKeyStore bobKeyStore = new SignalKeyStore();
         initializeKeys(bobKeyStore, bobPreKeyId, bobSignedPreKeyId);
 
-        Server server = new Server(8888, serverKeyStore, preKeyStore);
+        // Start the server with both ports for messages and prekeys
+        Server server = new Server(MESSAGE_PORT, PREKEY_PORT, serverKeyStore, preKeyStore);
         Thread serverThread = new Thread(server::start, "ServerThread");
         serverThread.start();
-        logger.info("Server started on port 8888");
+        logger.info("Server started on message port {} and prekey port {}", MESSAGE_PORT, PREKEY_PORT);
 
+        // Wait briefly for the server to start
         try {
-            Thread.sleep(2000); // wait for server to start
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             logger.error("Main thread interrupted while waiting for server to start", e);
             Thread.currentThread().interrupt();
         }
 
-        UserClient alice = new UserClient("alice", aliceKeyStore, alicePreKeyId, aliceSignedPreKeyId);
-        alice.connectToServer("localhost", 8888);
-
-        UserClient bob = new UserClient("bob", bobKeyStore, bobPreKeyId, bobSignedPreKeyId);
-        bob.connectToServer("localhost", 8888);
+        // Now connect clients with both ports
+        UserClient bob = new UserClient("bob", bobDeviceId, bobKeyStore, bobPreKeyId, bobSignedPreKeyId);
+        bob.connectToServer("localhost", MESSAGE_PORT, PREKEY_PORT);
         bob.listen();
 
-        if (alice.establishSessionWith("bob")) {
-            alice.listen();
-            alice.sendMessage("bob", "testmsg");
-            logger.info("Alice sent an encrypted message to Bob");
-        } else {
-            logger.warn("Failed to establish secure session between Alice and Bob");
+        UserClient alice = new UserClient("alice", aliceDeviceId, aliceKeyStore, alicePreKeyId, aliceSignedPreKeyId);
+        alice.connectToServer("localhost", MESSAGE_PORT, PREKEY_PORT);
+        alice.listen();
+
+
+        alice.establishSessionWith("bob");
+        bob.establishSessionWith("alice");
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            logger.error("Main thread interrupted while waiting for server to start", e);
+            Thread.currentThread().interrupt();
         }
+
+        String testMessageToBob = "Hi Bob!";
+        alice.sendMessage("bob", testMessageToBob);
+
+        String testMessageToAlice = "Hi Alice!";
+        bob.sendMessage("alice", testMessageToAlice);
 
         // Keep main thread alive indefinitely
         try {
