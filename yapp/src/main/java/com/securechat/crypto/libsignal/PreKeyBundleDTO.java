@@ -8,9 +8,10 @@ import org.whispersystems.libsignal.ecc.Curve;
 import org.whispersystems.libsignal.IdentityKey;
 import org.whispersystems.libsignal.state.PreKeyBundle;
 
+import java.io.Serializable;
 import java.util.Base64;
 
-public class PreKeyBundleDTO {
+public class PreKeyBundleDTO implements Serializable {
     private static final Logger logger = LoggerFactory.getLogger(PreKeyBundleDTO.class);
 
     public int registrationId;
