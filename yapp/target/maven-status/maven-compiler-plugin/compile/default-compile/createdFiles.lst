@@ -1,8 +1,9 @@
+com\securechat\crypto\libsignal\SimpleFileSessionStore.class
 com\securechat\network\PeerConnection.class
 com\securechat\crypto\libsignal\PreKeyBundleBuilder.class
 com\securechat\Launcher.class
+com\securechat\crypto\libsignal\SessionStore.class
 com\securechat\model\KeyBundle.class
-com\securechat\protocol\MessageType.class
 com\securechat\crypto\libsignal\EncryptedMessageResult.class
 com\securechat\store\PreKeyStore.class
 com\securechat\protocol\Packet.class
@@ -13,7 +14,6 @@ com\securechat\server\ClientManager.class
 com\securechat\crypto\KeyManager.class
 com\securechat\gui\ChatWindow.class
 com\securechat\store\FilePreKeyStore.class
-com\securechat\protocol\Message.class
 com\securechat\server\Server.class
 com\securechat\crypto\libsignal\SignalProtocolManager.class
 com\securechat\crypto\libsignal\SignalKeyStore.class
@@ -21,4 +21,5 @@ com\securechat\protocol\PacketType.class
 com\securechat\crypto\libsignal\PreKeyBundleDTO.class
 com\securechat\model\UserProfile.class
 com\securechat\network\MessageRouter.class
+com\securechat\client\UserClient$1.class
 com\securechat\server\Server$1.class

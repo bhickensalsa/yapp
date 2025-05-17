@@ -4,15 +4,17 @@ import com.securechat.crypto.libsignal.PreKeyBundleDTO;
 import com.securechat.crypto.libsignal.SignalKeyStore;
 import com.securechat.network.MessageRouter;
 import com.securechat.network.PeerConnection;
-import com.securechat.protocol.Message;
 import com.securechat.protocol.Packet;
 import com.securechat.protocol.PacketType;
 import com.securechat.store.PreKeyStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.DataInputStream;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,6 +31,10 @@ public class Server {
 
     private volatile boolean isRunning = true;
 
+    // Store sockets waiting to be paired by userId
+    private final ConcurrentHashMap<String, Socket> pendingMessageSockets = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Socket> pendingPreKeySockets = new ConcurrentHashMap<>();
+
     public Server(int messagePort, int preKeyPort, SignalKeyStore keyStore, PreKeyStore preKeyStore) {
         this.messagePort = messagePort;
         this.preKeyPort = preKeyPort;
@@ -43,22 +49,97 @@ public class Server {
         ) {
             logger.info("SecureChat server started on message port {} and preKey port {}", messagePort, preKeyPort);
 
-            while (isRunning) {
-                try {
-                    Socket messageSocket = messageServerSocket.accept();
-                    logger.info("Accepted message connection from {}", messageSocket.getRemoteSocketAddress());
-
-                    Socket preKeySocket = preKeyServerSocket.accept();
-                    logger.info("Accepted preKey connection from {}", preKeySocket.getRemoteSocketAddress());
-
-                    PeerConnection conn = new PeerConnection(messageSocket, preKeySocket);
-                    pool.execute(() -> handleClient(conn));
-                } catch (Exception e) {
-                    logger.error("Error accepting new connection", e);
+            // Thread for accepting message sockets
+            Thread messageAcceptThread = new Thread(() -> {
+                while (isRunning) {
+                    try {
+                        Socket messageSocket = messageServerSocket.accept();
+                        logger.info("Accepted message connection from {}", messageSocket.getRemoteSocketAddress());
+                        String userId = readUserIdFromSocket(messageSocket);
+                        if (userId == null) {
+                            logger.warn("Failed to read userId from message socket {}", messageSocket.getRemoteSocketAddress());
+                            messageSocket.close();
+                            continue;
+                        }
+                        pendingMessageSockets.put(userId, messageSocket);
+                        tryPair(userId);
+                    } catch (Exception e) {
+                        if (isRunning) logger.error("Error accepting message connection", e);
+                    }
                 }
-            }
+            }, "MessageAcceptThread");
+
+            // Thread for accepting preKey sockets
+            Thread preKeyAcceptThread = new Thread(() -> {
+                while (isRunning) {
+                    try {
+                        Socket preKeySocket = preKeyServerSocket.accept();
+                        logger.info("Accepted preKey connection from {}", preKeySocket.getRemoteSocketAddress());
+                        String userId = readUserIdFromSocket(preKeySocket);
+                        if (userId == null) {
+                            logger.warn("Failed to read userId from preKey socket {}", preKeySocket.getRemoteSocketAddress());
+                            preKeySocket.close();
+                            continue;
+                        }
+                        pendingPreKeySockets.put(userId, preKeySocket);
+                        tryPair(userId);
+                    } catch (Exception e) {
+                        if (isRunning) logger.error("Error accepting preKey connection", e);
+                    }
+                }
+            }, "PreKeyAcceptThread");
+
+            messageAcceptThread.start();
+            preKeyAcceptThread.start();
+
+            // Wait for threads to exit (e.g. on stop)
+            messageAcceptThread.join();
+            preKeyAcceptThread.join();
+
         } catch (Exception e) {
             logger.error("Server encountered a fatal error during startup", e);
+        }
+    }
+
+    private void tryPair(String userId) {
+        Socket msgSocket = pendingMessageSockets.get(userId);
+        Socket preKeySocket = pendingPreKeySockets.get(userId);
+        if (msgSocket != null && preKeySocket != null) {
+            // Remove sockets from pending maps
+            pendingMessageSockets.remove(userId);
+            pendingPreKeySockets.remove(userId);
+
+            logger.info("Pairing sockets for user '{}'", userId);
+            try {
+                PeerConnection conn = new PeerConnection(msgSocket, preKeySocket);
+                pool.execute(() -> handleClient(conn));
+            } catch (Exception e) {
+                logger.error("Failed to create PeerConnection for '{}'", userId, e);
+                try {
+                    msgSocket.close();
+                    preKeySocket.close();
+                } catch (Exception ex) {
+                    logger.warn("Error closing sockets for '{}'", userId, ex);
+                }
+            }
+        }
+    }
+
+    /**
+     * Reads the userId as a String sent by the client immediately upon socket connection.
+     * This assumes client sends userId as a UTF string or similar.
+     */
+    private String readUserIdFromSocket(Socket socket) {
+        try {
+            InputStream in = socket.getInputStream();
+            DataInputStream dataIn = new DataInputStream(in);
+            // Assuming client sends UTF string userId immediately upon connect
+            String userId = dataIn.readUTF();
+            logger.debug("Read userId '{}' from socket {}", userId, socket.getRemoteSocketAddress());
+            return userId;
+        } catch (Exception e) {
+            logger.error("Failed to read userId from socket {}", socket.getRemoteSocketAddress(), e);
+            return null;
         }
     }
 
@@ -72,8 +153,11 @@ public class Server {
         }
     }
 
+    // Existing methods mostly unchanged except minor tweaks
+
     private void handleClient(PeerConnection conn) {
         try {
+            // userId already read on raw socket; here we re-read from message stream for safety
             String userId = receiveUserId(conn);
             if (userId == null) return;
 
@@ -121,12 +205,13 @@ public class Server {
                 return false;
             }
 
-            if (packet.getType() != PacketType.PREKEY_BUNDLE || !(packet.getPayload() instanceof PreKeyBundleDTO bundle)) {
+            if (packet.getType() != PacketType.PREKEY_BUNDLE || packet.getPreKeyBundlePayload() == null) {
                 logger.error("Invalid PREKEY_BUNDLE payload from '{}': {}", userId, packet.getType());
                 conn.close();
                 return false;
             }
 
+            PreKeyBundleDTO bundle = packet.getPreKeyBundlePayload();
             preKeyStore.registerPreKeyBundle(userId, deviceId, bundle);
             logger.info("Registered prekey bundle for user '{}'", userId);
             return true;
@@ -147,18 +232,16 @@ public class Server {
 
                 switch (packet.getType()) {
                     case MESSAGE -> {
-                        if (packet.getPayload() instanceof Message msg) {
-                            logger.info("Routing message from '{}' to '{}'", msg.getSender(), msg.getRecipient());
-                            messageRouter.routeMessage(msg);
+                        byte[] messagePayload = packet.getMessagePayload();
+                        if (messagePayload != null) {
+                            messageRouter.routeMessage(packet, userId);
                         } else {
-                            logger.warn("Invalid MESSAGE payload from '{}'", userId);
+                            logger.warn("Invalid MESSAGE payload from '{}': payload is null", userId);
                         }
                     }
-
                     case ACK, ERROR, COMMAND -> {
-                        logger.debug("Received {} packet from '{}': {}", packet.getType(), userId, packet.getPayload());
+                        logger.debug("Received {} packet from '{}': {}", packet.getType(), userId, packet.getStringPayload());
                     }
-
                     default -> logger.warn("Unknown packet type from '{}': {}", userId, packet.getType());
                 }
             }
@@ -177,24 +260,18 @@ public class Server {
                 }
 
                 switch (packet.getType()) {
-                    case GET_PREKEY_BUNDLE -> {
-                        if (packet.getPayload() instanceof String targetUser) {
-                            PreKeyBundleDTO bundle = preKeyStore.getPreKeyBundle(targetUser, deviceId);
-                            if (bundle != null) {
-                                conn.sendPreKeyObject(new Packet(PacketType.PREKEY_BUNDLE, bundle));
-                                logger.info("Sent preKey bundle for '{}'", targetUser);
-                            } else {
-                                conn.sendPreKeyObject(new Packet(PacketType.ERROR, "PreKey bundle not found for: " + targetUser));
-                                logger.warn("PreKey bundle not found for '{}'", targetUser);
-                            }
+                    case MESSAGE, PREKEY_MESSAGE -> {
+                        byte[] messagePayload = packet.getMessagePayload();
+                        if (messagePayload != null) {
+                            messageRouter.routeMessage(packet, userId);
+                        } else {
+                            logger.warn("Invalid {} payload from '{}': payload is null", packet.getType(), userId);
                         }
                     }
-
                     case ACK, ERROR, COMMAND -> {
-                        logger.debug("Received {} on preKey stream from '{}': {}", packet.getType(), userId, packet.getPayload());
+                        logger.debug("Received {} packet from '{}': {}", packet.getType(), userId, packet.getStringPayload());
                     }
-
-                    default -> logger.warn("Unknown preKey packet type from '{}': {}", userId, packet.getType());
+                    default -> logger.warn("Unknown packet type from '{}': {}", userId, packet.getType());
                 }
             }
         } catch (Exception e) {

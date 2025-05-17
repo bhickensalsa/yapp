@@ -22,37 +22,6 @@ public class SignalProtocolManager {
     }
 
     /**
-     * Attempts to decrypt any incoming ciphertext by detecting message type (PreKey or Signal).
-     */
-    public String decryptAny(SignalProtocolAddress sender, byte[] ciphertext) {
-        SessionCipher cipher = new SessionCipher(store, sender);
-        try {
-            logger.debug("Attempting to decrypt message from {} as PreKeySignalMessage", sender);
-            PreKeySignalMessage preKeyMessage = new PreKeySignalMessage(ciphertext);
-            byte[] plaintext = cipher.decrypt(preKeyMessage);
-            logger.info("Successfully decrypted PreKeySignalMessage from {}", sender);
-            return new String(plaintext, StandardCharsets.UTF_8);
-        } catch (InvalidMessageException e) {
-            logger.debug("Not a PreKeySignalMessage from {}: {}", sender, e.getMessage());
-            // Fall through to attempt SignalMessage
-        } catch (Exception e) {
-            logger.error("Error while decrypting PreKeySignalMessage from {}: {}", sender, e.getMessage(), e);
-            return null;
-        }
-
-        try {
-            logger.debug("Attempting to decrypt message from {} as SignalMessage", sender);
-            SignalMessage signalMessage = new SignalMessage(ciphertext);
-            byte[] plaintext = cipher.decrypt(signalMessage);
-            logger.info("Successfully decrypted SignalMessage from {}", sender);
-            return new String(plaintext, StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            logger.error("Failed to decrypt SignalMessage from {}: {}", sender, e.getMessage(), e);
-            return null;
-        }
-    }
-
-    /**
      * Initializes a session with the recipient using their PreKeyBundle.
      */
     public void initializeSession(SignalProtocolAddress remoteAddress, PreKeyBundle preKeyBundle) {
@@ -67,71 +36,33 @@ public class SignalProtocolManager {
     }
 
     /**
-     * Encrypts a message using an existing session.
+     * Encrypts a plaintext message using an existing session.
+     * Returns a SignalMessage that can be serialized and sent.
      */
-    public EncryptedMessageResult encryptMessage(SignalProtocolAddress address, String plaintext) {
+    public SignalMessage encryptMessage(SignalProtocolAddress recipientAddress, String plaintext) {
         try {
-            SessionCipher cipher = new SessionCipher(store, address);
-            CiphertextMessage message = cipher.encrypt(plaintext.getBytes(StandardCharsets.UTF_8));
-
-            boolean isPreKeyMessage = message.getType() == CiphertextMessage.PREKEY_TYPE;
-            logger.info("Message encrypted for {} (isPreKeyMessage={})", address, isPreKeyMessage);
-            return new EncryptedMessageResult(message.serialize(), isPreKeyMessage);
+            SessionCipher cipher = new SessionCipher(store, recipientAddress);
+            CiphertextMessage ciphertextMessage = cipher.encrypt(plaintext.getBytes(StandardCharsets.UTF_8));
+            // Construct SignalMessage from serialized bytes to ensure format
+            SignalMessage signalMessage = new SignalMessage(ciphertextMessage.serialize());
+            logger.info("SignalMessage successfully built for {}", recipientAddress);
+            return signalMessage;
         } catch (UntrustedIdentityException e) {
-            logger.error("Untrusted identity while encrypting message for {}: {}", address, e.getMessage(), e);
+            logger.error("Untrusted identity while encrypting message for {}: {}", recipientAddress, e.getMessage(), e);
             return null;
         } catch (Exception e) {
-            logger.error("Encryption failed for {}: {}", address, e.getMessage(), e);
+            logger.error("Encryption failed for {}: {}", recipientAddress, e.getMessage(), e);
             return null;
         }
     }
 
     /**
-     * Encrypts an initial message using a PreKeyBundle, establishing a session in the process.
+     * Decrypts a SignalMessage and returns the plaintext string.
      */
-    public EncryptedMessageResult encryptPreKeyMessage(SignalProtocolAddress recipient, PreKeyBundle bundle, String plaintext) {
-        try {
-            logger.debug("Encrypting initial message to {} using PreKeyBundle", recipient);
-            SessionBuilder sessionBuilder = new SessionBuilder(store, recipient);
-            sessionBuilder.process(bundle);
-
-            SessionCipher cipher = new SessionCipher(store, recipient);
-            CiphertextMessage message = cipher.encrypt(plaintext.getBytes(StandardCharsets.UTF_8));
-
-            boolean isPreKeyMessage = message.getType() == CiphertextMessage.PREKEY_TYPE;
-            logger.info("Initial message encrypted for {} (isPreKeyMessage={})", recipient, isPreKeyMessage);
-            return new EncryptedMessageResult(message.serialize(), isPreKeyMessage);
-        } catch (Exception e) {
-            logger.error("Failed to encrypt initial message to {}: {}", recipient, e.getMessage(), e);
-            return null;
-        }
-    }
-
-    /**
-     * Decrypts a PreKeySignalMessage and automatically establishes a session.
-     */
-    public String decryptPreKeyMessage(SignalProtocolAddress address, byte[] ciphertext) {
-        try {
-            logger.debug("Decrypting PreKeySignalMessage from {}", address);
-            SessionCipher cipher = new SessionCipher(store, address);
-            PreKeySignalMessage message = new PreKeySignalMessage(ciphertext);
-            byte[] plaintext = cipher.decrypt(message);
-            logger.info("Successfully decrypted PreKeySignalMessage from {}", address);
-            return new String(plaintext, StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            logger.error("Failed to decrypt PreKeySignalMessage from {}: {}", address, e.getMessage(), e);
-            return null;
-        }
-    }
-
-    /**
-     * Decrypts a regular SignalMessage.
-     */
-    public String decryptMessage(SignalProtocolAddress address, byte[] ciphertext) {
+    public String decryptMessage(SignalProtocolAddress address, SignalMessage message) {
         try {
             logger.debug("Decrypting SignalMessage from {}", address);
             SessionCipher cipher = new SessionCipher(store, address);
-            SignalMessage message = new SignalMessage(ciphertext);
             byte[] plaintext = cipher.decrypt(message);
             logger.info("Successfully decrypted SignalMessage from {}", address);
             return new String(plaintext, StandardCharsets.UTF_8);
@@ -142,16 +73,53 @@ public class SignalProtocolManager {
     }
 
     /**
+     * Builds an initial PreKeySignalMessage using a PreKeyBundle.
+     * Returns the PreKeySignalMessage to be serialized and sent.
+     */
+    public PreKeySignalMessage buildInitialPreKeyMessage(SignalProtocolAddress recipient, PreKeyBundle bundle, String plaintext) {
+        try {
+            logger.debug("Building initial PreKeySignalMessage for {} using PreKeyBundle", recipient);
+
+            SessionBuilder sessionBuilder = new SessionBuilder(store, recipient);
+            sessionBuilder.process(bundle);
+
+            SessionCipher cipher = new SessionCipher(store, recipient);
+            CiphertextMessage ciphertextMessage = cipher.encrypt(plaintext.getBytes(StandardCharsets.UTF_8));
+
+            if (ciphertextMessage.getType() == CiphertextMessage.PREKEY_TYPE) {
+                PreKeySignalMessage preKeySignalMessage = new PreKeySignalMessage(ciphertextMessage.serialize());
+                logger.info("Initial PreKeySignalMessage successfully built for {}", recipient);
+                return preKeySignalMessage;
+            } else {
+                logger.error("Expected a PreKeySignalMessage but received a regular SignalMessage.");
+                return null;
+            }
+        } catch (Exception e) {
+            logger.error("Failed to build initial PreKeySignalMessage for {}: {}", recipient, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Decrypts a PreKeySignalMessage and returns the plaintext string.
+     */
+    public String decryptPreKeyMessage(SignalProtocolAddress address, PreKeySignalMessage message) {
+        try {
+            logger.debug("Decrypting PreKeySignalMessage from {}", address);
+            SessionCipher cipher = new SessionCipher(store, address);
+            byte[] plaintext = cipher.decrypt(message);
+            logger.info("Successfully decrypted PreKeySignalMessage from {}", address);
+            return new String(plaintext, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            logger.error("Failed to decrypt PreKeySignalMessage from {}: {}", address, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
      * Checks if a session already exists with the given address.
      */
-    public boolean hasSession(String userId) {
-        try {
-            boolean exists = store.containsSession(new SignalProtocolAddress(userId, 1)); // deviceId should be passed in correctly
-            logger.debug("Session check for {} returned {}", userId, exists);
-            return exists;
-        } catch (Exception e) {
-            logger.error("Error while checking session for {}: {}", userId, e.getMessage(), e);
-            return false;
-        }
+    public boolean hasSession(String userId, int deviceId) {
+        return store.containsSession(new SignalProtocolAddress(userId, deviceId));
     }
 }

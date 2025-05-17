@@ -1,9 +1,6 @@
 package com.securechat.network;
 
-import com.securechat.protocol.Message;
 import com.securechat.protocol.Packet;
-import com.securechat.protocol.PacketType;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,24 +29,37 @@ public class MessageRouter {
 
     /**
      * Routes a message packet to the recipient over their message stream.
-     * The message parameter here is expected to be the deserialized Message object,
-     * wrapped as a Packet elsewhere (so this method sends just the Message).
      */
-    public void routeMessage(Message message) {
-        PeerConnection recipientConnection = activeUsers.get(message.getRecipient());
+    public void routeMessage(Packet packet, String senderId) {
+        if (packet == null) {
+            logger.warn("Null packet");
+            return;
+        }
 
+        String recipientId = packet.getRecipientId();
+        if (recipientId == null) {
+            logger.warn("Packet has no recipientId; dropping message");
+            return;
+        }
+
+        byte[] messagePayload = packet.getMessagePayload();
+        if (messagePayload == null) {
+            logger.warn("Packet of type MESSAGE missing byte[] payload; dropping message");
+            return;
+        }
+
+        PeerConnection recipientConnection = activeUsers.get(recipientId);
         if (recipientConnection != null) {
             try {
-                // Use the message stream to send the message Packet
-                Packet packet = new Packet(PacketType.MESSAGE, message);
+                // Assuming sendMessageObject accepts byte[] or Packet, here we pass the whole packet
+                // but you might need to send just the messagePayload depending on PeerConnection API
                 recipientConnection.sendMessageObject(packet);
-                logger.debug("Routed message from '{}' to '{}'", message.getSender(), message.getRecipient());
+                logger.debug("Routed ciphertext message from '{}' to '{}'", senderId, recipientId);
             } catch (Exception e) {
-                logger.error("Failed to send message to user '{}'", message.getRecipient(), e);
+                logger.error("Failed to send ciphertext message to user '{}'", recipientId, e);
             }
         } else {
-            logger.warn("No active connection found for recipient '{}'. Message from '{}' dropped.",
-                        message.getRecipient(), message.getSender());
+            logger.warn("No active connection found for recipient '{}'. Packet dropped.", recipientId);
         }
     }
 
@@ -57,10 +67,20 @@ public class MessageRouter {
      * Routes prekey-related packets (e.g., PreKeyBundle requests/responses) over the prekey stream.
      */
     public void routePreKeyPacket(Packet preKeyPacket, String recipientId) {
+        if (preKeyPacket == null) {
+            logger.warn("Null preKeyPacket");
+            return;
+        }
+
         PeerConnection recipientConnection = activeUsers.get(recipientId);
 
         if (recipientConnection != null) {
             try {
+                // You can verify payload type here if you want
+                if (preKeyPacket.getPreKeyBundlePayload() == null && preKeyPacket.getStringPayload() == null) {
+                    logger.warn("PreKey packet has no valid payload, dropping");
+                    return;
+                }
                 recipientConnection.sendPreKeyObject(preKeyPacket);
                 logger.debug("Routed prekey packet of type '{}' to '{}'", preKeyPacket.getType(), recipientId);
             } catch (Exception e) {

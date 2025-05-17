@@ -8,9 +8,9 @@ import org.whispersystems.libsignal.state.*;
 import org.whispersystems.libsignal.util.KeyHelper;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SignalKeyStore implements SignalProtocolStore {
 
@@ -19,10 +19,10 @@ public class SignalKeyStore implements SignalProtocolStore {
     private final IdentityKeyPair identityKeyPair;
     private final int registrationId;
 
-    private final Map<Integer, PreKeyRecord> preKeyStore = new HashMap<>();
-    private final Map<Integer, SignedPreKeyRecord> signedPreKeyStore = new HashMap<>();
-    private final Map<SignalProtocolAddress, SessionRecord> sessionStore = new HashMap<>();
-    private final Map<SignalProtocolAddress, IdentityKey> identityStore = new HashMap<>();
+    private final Map<Integer, PreKeyRecord> preKeyStore = new ConcurrentHashMap<>();
+    private final Map<Integer, SignedPreKeyRecord> signedPreKeyStore = new ConcurrentHashMap<>();
+    private final Map<SignalProtocolAddress, SessionRecord> sessionStore = new ConcurrentHashMap<>();
+    private final Map<SignalProtocolAddress, IdentityKey> identityStore = new ConcurrentHashMap<>();
 
     public SignalKeyStore() {
         this.identityKeyPair = KeyHelper.generateIdentityKeyPair();
