@@ -1,10 +1,6 @@
 
-
 ```
 yapp
-├─ logs
-│  ├─ securechat-server.2025-05-15.log.gz
-│  └─ securechat-server.log
 ├─ README.md
 └─ yapp
    ├─ pom.xml
@@ -18,16 +14,10 @@ yapp
    │  │  │        ├─ config
    │  │  │        │  └─ ConfigLoader.java
    │  │  │        ├─ crypto
-   │  │  │        │  ├─ EncryptionManager.java
-   │  │  │        │  ├─ Encryptor.java
-   │  │  │        │  ├─ KeyManager.java
-   │  │  │        │  ├─ libsignal
-   │  │  │        │  │  ├─ EncryptedMessageResult.java
-   │  │  │        │  │  ├─ PreKeyBundleBuilder.java
-   │  │  │        │  │  ├─ PreKeyBundleDTO.java
-   │  │  │        │  │  ├─ SignalKeyStore.java
-   │  │  │        │  │  └─ SignalProtocolManager.java
-   │  │  │        │  └─ RSAEncryptor.java
+   │  │  │        │  └─ libsignal
+   │  │  │        │     ├─ PreKeyBundleBuilder.java
+   │  │  │        │     ├─ PreKeyBundleDTO.java
+   │  │  │        │     └─ SignalProtocolManager.java
    │  │  │        ├─ gui
    │  │  │        │  └─ ChatWindow.java
    │  │  │        ├─ Launcher.java
@@ -38,19 +28,13 @@ yapp
    │  │  │        │  ├─ MessageRouter.java
    │  │  │        │  └─ PeerConnection.java
    │  │  │        ├─ protocol
-   │  │  │        │  ├─ Message.java
-   │  │  │        │  ├─ MessageSerializer.java
-   │  │  │        │  ├─ MessageType.java
    │  │  │        │  ├─ Packet.java
    │  │  │        │  └─ PacketType.java
    │  │  │        ├─ server
    │  │  │        │  ├─ ClientManager.java
    │  │  │        │  └─ Server.java
-   │  │  │        ├─ store
-   │  │  │        │  ├─ FilePreKeyStore.java
-   │  │  │        │  ├─ InMemoryPreKeyStore.java
-   │  │  │        │  └─ PreKeyStore.java
-   │  │  │        └─ utils
+   │  │  │        └─ store
+   │  │  │           └─ SignalStore.java
    │  │  └─ resources
    │  │     ├─ config.properties
    │  │     └─ logback.xml
@@ -65,16 +49,10 @@ yapp
       │  │     ├─ config
       │  │     │  └─ ConfigLoader.class
       │  │     ├─ crypto
-      │  │     │  ├─ EncryptionManager.class
-      │  │     │  ├─ Encryptor.class
-      │  │     │  ├─ KeyManager.class
-      │  │     │  ├─ libsignal
-      │  │     │  │  ├─ EncryptedMessageResult.class
-      │  │     │  │  ├─ PreKeyBundleBuilder.class
-      │  │     │  │  ├─ PreKeyBundleDTO.class
-      │  │     │  │  ├─ SignalKeyStore.class
-      │  │     │  │  └─ SignalProtocolManager.class
-      │  │     │  └─ RSAEncryptor.class
+      │  │     │  └─ libsignal
+      │  │     │     ├─ PreKeyBundleBuilder.class
+      │  │     │     ├─ PreKeyBundleDTO.class
+      │  │     │     └─ SignalProtocolManager.class
       │  │     ├─ gui
       │  │     │  └─ ChatWindow.class
       │  │     ├─ Launcher.class
@@ -85,19 +63,13 @@ yapp
       │  │     │  ├─ MessageRouter.class
       │  │     │  └─ PeerConnection.class
       │  │     ├─ protocol
-      │  │     │  ├─ Message.class
-      │  │     │  ├─ MessageSerializer.class
-      │  │     │  ├─ MessageType.class
       │  │     │  ├─ Packet.class
       │  │     │  └─ PacketType.class
       │  │     ├─ server
       │  │     │  ├─ ClientManager.class
       │  │     │  └─ Server.class
-      │  │     ├─ store
-      │  │     │  ├─ FilePreKeyStore.class
-      │  │     │  ├─ InMemoryPreKeyStore.class
-      │  │     │  └─ PreKeyStore.class
-      │  │     └─ utils
+      │  │     └─ store
+      │  │        └─ SignalStore.class
       │  ├─ config.properties
       │  └─ logback.xml
       ├─ generated-sources
