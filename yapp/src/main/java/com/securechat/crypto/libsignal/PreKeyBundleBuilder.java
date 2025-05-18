@@ -6,9 +6,9 @@ import org.whispersystems.libsignal.IdentityKey;
 import org.whispersystems.libsignal.InvalidKeyException;
 import org.whispersystems.libsignal.InvalidKeyIdException;
 import org.whispersystems.libsignal.state.PreKeyBundle;
+import org.whispersystems.libsignal.state.PreKeyRecord;
 import org.whispersystems.libsignal.state.SignalProtocolStore;
 import org.whispersystems.libsignal.state.SignedPreKeyRecord;
-import org.whispersystems.libsignal.state.PreKeyRecord;
 
 public class PreKeyBundleBuilder {
 
@@ -16,47 +16,50 @@ public class PreKeyBundleBuilder {
 
     public static PreKeyBundle build(int registrationId, int deviceId, SignalProtocolStore store,
                                      int preKeyId, int signedPreKeyId) throws InvalidKeyException {
-        PreKeyRecord preKey = null;
-        SignedPreKeyRecord signedPreKey = null;
 
         logger.debug("Building PreKeyBundle with registrationId={}, deviceId={}, preKeyId={}, signedPreKeyId={}",
                      registrationId, deviceId, preKeyId, signedPreKeyId);
 
+        PreKeyRecord preKey;
+        SignedPreKeyRecord signedPreKey;
+
         try {
             preKey = store.loadPreKey(preKeyId);
-            logger.info("Loaded PreKeyRecord for id {}", preKeyId);
+            logger.info("Loaded PreKeyRecord for ID: {}", preKeyId);
         } catch (InvalidKeyIdException e) {
-            logger.error("Could not load PreKeyRecord with id {}: {}", preKeyId, e.getMessage());
+            String message = String.format("Failed to load PreKey with ID %d: %s", preKeyId, e.getMessage());
+            logger.error(message);
+            throw new IllegalStateException(message, e);
         }
 
         try {
             signedPreKey = store.loadSignedPreKey(signedPreKeyId);
-            logger.info("Loaded SignedPreKeyRecord for id {}", signedPreKeyId);
+            logger.info("Loaded SignedPreKeyRecord for ID: {}", signedPreKeyId);
         } catch (InvalidKeyIdException e) {
-            logger.error("Could not load SignedPreKeyRecord with id {}: {}", signedPreKeyId, e.getMessage());
+            String message = String.format("Failed to load SignedPreKey with ID %d: %s", signedPreKeyId, e.getMessage());
+            logger.error(message);
+            throw new IllegalStateException(message, e);
         }
 
-        if (preKey == null || signedPreKey == null) {
-            String errMsg = "PreKey or SignedPreKey not found for given IDs: preKeyId=" + preKeyId + ", signedPreKeyId=" + signedPreKeyId;
+        IdentityKey identityKey = store.getIdentityKeyPair().getPublicKey();
+        if (identityKey == null) {
+            String errMsg = "IdentityKey is null; ensure user identity is initialized properly";
             logger.error(errMsg);
             throw new IllegalStateException(errMsg);
         }
 
-        IdentityKey identityKey = store.getIdentityKeyPair().getPublicKey();
-        logger.debug("Using identity public key for PreKeyBundle");
-
         PreKeyBundle bundle = new PreKeyBundle(
             registrationId,
             deviceId,
-            preKeyId,
+            preKey.getId(),
             preKey.getKeyPair().getPublicKey(),
-            signedPreKeyId,
+            signedPreKey.getId(),
             signedPreKey.getKeyPair().getPublicKey(),
             signedPreKey.getSignature(),
             identityKey
         );
 
-        logger.info("PreKeyBundle successfully built");
+        logger.info("PreKeyBundle successfully built for deviceId {}", deviceId);
         return bundle;
     }
 }

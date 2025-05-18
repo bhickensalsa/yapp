@@ -1,11 +1,8 @@
 package com.securechat;
 
 import com.securechat.client.UserClient;
-import com.securechat.crypto.KeyManager;
-import com.securechat.crypto.libsignal.SignalKeyStore;
 import com.securechat.server.Server;
-import com.securechat.store.InMemoryPreKeyStore;
-import com.securechat.store.PreKeyStore;
+import com.securechat.store.SignalStore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,97 +11,84 @@ public class Launcher {
 
     private static final Logger logger = LoggerFactory.getLogger(Launcher.class);
 
-    private static final int SERVER_SIGNED_PREKEY_ID = 1;
-    private static final int SERVER_PREKEY_ID = 1;
-
-    // Define separate ports for message and preKey sockets
+    private static final String SERVER_ID = "localhost";
     private static final int MESSAGE_PORT = 8888;
-    private static final int PREKEY_PORT = 9999;
 
     public static void main(String[] args) {
 
-        int alicePreKeyId = 1001;
-        int aliceSignedPreKeyId = 1002;
-        int aliceDeviceId = 1;
+        final String aliceId = "alice";
+        final int aliceDeviceId = 1;
+        final int alicePreKeyId = 1001;
+        final int aliceSignedPreKeyId = 1002;
 
-        int bobPreKeyId = 2001;
-        int bobSignedPreKeyId = 2002;
-        int bobDeviceId = 2;
+        final String bobId = "bob";
+        final int bobDeviceId = 2;
+        final int bobPreKeyId = 2001;
+        final int bobSignedPreKeyId = 2002;
 
-        logger.info("Initializing preKeyStore and keyStores");
-
-        PreKeyStore preKeyStore = new InMemoryPreKeyStore();
-        SignalKeyStore serverKeyStore = new SignalKeyStore();
-        initializeKeys(serverKeyStore);
-
-        SignalKeyStore aliceKeyStore = new SignalKeyStore();
-        initializeKeys(aliceKeyStore, alicePreKeyId, aliceSignedPreKeyId);
-
-        SignalKeyStore bobKeyStore = new SignalKeyStore();
-        initializeKeys(bobKeyStore, bobPreKeyId, bobSignedPreKeyId);
-
-        // Start the server with both ports for messages and prekeys
-        Server server = new Server(MESSAGE_PORT, PREKEY_PORT, serverKeyStore, preKeyStore);
+        // Start the server
+        Server server = new Server(MESSAGE_PORT);
         Thread serverThread = new Thread(server::start, "ServerThread");
         serverThread.start();
-        logger.info("Server started on message port {} and prekey port {}", MESSAGE_PORT, PREKEY_PORT);
+        logger.info("Server started on port {}", MESSAGE_PORT);
 
-        // Wait briefly for the server to start
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            logger.error("Main thread interrupted while waiting for server to start", e);
-            Thread.currentThread().interrupt();
-        }
+        waitMillis(2000); // Give server time to start
 
-        // Now connect clients with both ports
-        UserClient bob = new UserClient("bob", bobDeviceId, bobKeyStore, bobPreKeyId, bobSignedPreKeyId);
-        bob.connectToServer("localhost", MESSAGE_PORT, PREKEY_PORT);
-        bob.listen();
+        // Create client stores (could be separate per client)
+        SignalStore aliceStore = new SignalStore();
+        SignalStore bobStore = new SignalStore();
 
-        UserClient alice = new UserClient("alice", aliceDeviceId, aliceKeyStore, alicePreKeyId, aliceSignedPreKeyId);
-        alice.connectToServer("localhost", MESSAGE_PORT, PREKEY_PORT);
-        alice.listen();
+        // Create clients with their stores
+        UserClient alice = new UserClient(aliceId, aliceDeviceId, aliceStore, alicePreKeyId, aliceSignedPreKeyId);
+        UserClient bob = new UserClient(bobId, bobDeviceId, bobStore, bobPreKeyId, bobSignedPreKeyId);
 
+        // Initialize keys within clients
+        alice.initializeUser();
+        bob.initializeUser();
 
-        alice.establishSessionWith("bob");
-        bob.establishSessionWith("alice");
+        // Connect clients to the server
+        alice.connectToServer(SERVER_ID, MESSAGE_PORT);
+        alice.startListening();
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            logger.error("Main thread interrupted while waiting for server to start", e);
-            Thread.currentThread().interrupt();
-        }
+        bob.connectToServer(SERVER_ID, MESSAGE_PORT);
+        bob.startListening();
 
-        String testMessageToBob = "Hi Bob!";
-        alice.sendMessage("bob", testMessageToBob);
+        // Register peers with device IDs
+        alice.addPeerDeviceId(bobId, bobDeviceId);
+        bob.addPeerDeviceId(aliceId, aliceDeviceId);
 
-        String testMessageToAlice = "Hi Alice!";
-        bob.sendMessage("alice", testMessageToAlice);
+        waitMillis(2500); // Wait for bundles to register
 
-        // Keep main thread alive indefinitely
+        // Establish sessions
+        alice.establishSession(bobId, bobDeviceId);
+        bob.establishSession(aliceId, aliceDeviceId);
+
+        waitMillis(1000); // Wait for sessions to finalize
+
+        // Exchange messages
+        alice.sendMessage(bobId, "Hi Bob!");
+        bob.sendMessage(aliceId, "Hi Alice!");
+
+        waitMillis(1000);
+
+        alice.sendMessage(bobId, "Are you available for a call?");
+        bob.sendMessage(aliceId, "Sure, let's do it!");
+
+        // Keep main thread alive so clients can keep running
         try {
             Thread.currentThread().join();
         } catch (InterruptedException e) {
-            logger.error("Main thread interrupted, shutting down", e);
+            logger.error("Main thread interrupted", e);
             Thread.currentThread().interrupt();
         }
     }
 
-    private static void initializeKeys(SignalKeyStore keyStore, int preKeyId, int signedPreKeyId) {
-        KeyManager keyManager = new KeyManager();
-
-        var preKey = keyManager.generatePreKey(preKeyId);
-        keyStore.storePreKey(preKeyId, preKey);
-
-        var signedPreKey = keyManager.generateSignedPreKey(keyStore.getIdentityKeyPair(), signedPreKeyId);
-        keyStore.storeSignedPreKey(signedPreKeyId, signedPreKey);
-
-        logger.debug("Initialized keys: preKeyId={}, signedPreKeyId={}", preKeyId, signedPreKeyId);
-    }
-
-    private static void initializeKeys(SignalKeyStore keyStore) {
-        initializeKeys(keyStore, SERVER_PREKEY_ID, SERVER_SIGNED_PREKEY_ID);
+    private static void waitMillis(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            logger.error("Sleep interrupted", e);
+            Thread.currentThread().interrupt();
+        }
     }
 }

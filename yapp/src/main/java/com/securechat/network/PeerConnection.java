@@ -5,58 +5,57 @@ import java.net.Socket;
 
 public class PeerConnection {
 
-    private final Socket messageSocket;
-    private final ObjectInputStream messageInput;
-    private final ObjectOutputStream messageOutput;
+    private final Socket socket;
+    private final ObjectInputStream input;
+    private final ObjectOutputStream output;
 
-    private final Socket preKeySocket;
-    private final ObjectInputStream preKeyInput;
-    private final ObjectOutputStream preKeyOutput;
-
-    // Constructor takes two sockets: one for messages, one for prekeys
-    public PeerConnection(Socket messageSocket, Socket preKeySocket) throws IOException {
-        this.messageSocket = messageSocket;
-        this.messageOutput = new ObjectOutputStream(messageSocket.getOutputStream());
-        this.messageOutput.flush();
-        this.messageInput = new ObjectInputStream(messageSocket.getInputStream());
-
-        this.preKeySocket = preKeySocket;
-        this.preKeyOutput = new ObjectOutputStream(preKeySocket.getOutputStream());
-        this.preKeyOutput.flush();
-        this.preKeyInput = new ObjectInputStream(preKeySocket.getInputStream());
+    public PeerConnection(Socket socket) throws IOException {
+        this.socket = socket;
+        this.output = new ObjectOutputStream(socket.getOutputStream());
+        this.output.flush();
+        this.input = new ObjectInputStream(socket.getInputStream());
     }
 
-    // Send a message object on the message stream
+    public void sendUserId(String userId) throws IOException {
+        DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+        dos.writeUTF(userId);
+        dos.flush();
+    }
+
     public void sendMessageObject(Object obj) throws IOException {
-        messageOutput.writeObject(obj);
-        messageOutput.flush();
-    }
-
-    // Receive a message object on the message stream
-    public Object receiveMessageObject() throws IOException, ClassNotFoundException {
-        return messageInput.readObject();
-    }
-
-    // Send a prekey-related object on the prekey stream
-    public void sendPreKeyObject(Object obj) throws IOException {
-        preKeyOutput.writeObject(obj);
-        preKeyOutput.flush();
-    }
-
-    // Receive a prekey-related object on the prekey stream
-    public Object receivePreKeyObject() throws IOException, ClassNotFoundException {
-        return preKeyInput.readObject();
-    }
-
-    public void close() throws IOException {
-        try {
-            messageSocket.close();
-        } finally {
-            preKeySocket.close();
+        synchronized (output) {
+            output.writeObject(obj);
+            output.flush();
         }
     }
 
+    public Object receiveMessageObject() throws IOException, ClassNotFoundException {
+        synchronized (input) {
+            return input.readObject();
+        }
+    }
+
+    public void close() throws IOException {
+        IOException ex = null;
+        try {
+            if (output != null) output.close();
+        } catch (IOException e) {
+            ex = e;
+        }
+        try {
+            if (input != null) input.close();
+        } catch (IOException e) {
+            if (ex == null) ex = e;
+        }
+        try {
+            if (socket != null && !socket.isClosed()) socket.close();
+        } catch (IOException e) {
+            if (ex == null) ex = e;
+        }
+        if (ex != null) throw ex;
+    }
+
     public String getRemoteAddress() {
-        return messageSocket.getRemoteSocketAddress().toString();
+        return socket.getRemoteSocketAddress().toString();
     }
 }

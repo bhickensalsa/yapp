@@ -1,204 +1,163 @@
 package com.securechat.server;
 
 import com.securechat.crypto.libsignal.PreKeyBundleDTO;
-import com.securechat.crypto.libsignal.SignalKeyStore;
 import com.securechat.network.MessageRouter;
 import com.securechat.network.PeerConnection;
-import com.securechat.protocol.Message;
 import com.securechat.protocol.Packet;
 import com.securechat.protocol.PacketType;
-import com.securechat.store.PreKeyStore;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Server {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
-    private final int messagePort;
-    private final int preKeyPort;
-    private final SignalKeyStore keyStore;
-    private final PreKeyStore preKeyStore;
+    private final int port;
     private final ExecutorService pool = Executors.newCachedThreadPool();
     private final MessageRouter messageRouter = new MessageRouter();
-    private final int deviceId = 1; // TODO: Make configurable if supporting multi-device
+
+    // Map of userId -> deviceId -> PreKeyBundleDTO
+    private final Map<String, Map<Integer, PreKeyBundleDTO>> peerBundles = new ConcurrentHashMap<>();
 
     private volatile boolean isRunning = true;
 
-    public Server(int messagePort, int preKeyPort, SignalKeyStore keyStore, PreKeyStore preKeyStore) {
-        this.messagePort = messagePort;
-        this.preKeyPort = preKeyPort;
-        this.keyStore = keyStore;
-        this.preKeyStore = preKeyStore;
+    public Server(int port) {
+        this.port = port;
     }
 
     public void start() {
-        try (
-            ServerSocket messageServerSocket = new ServerSocket(messagePort);
-            ServerSocket preKeyServerSocket = new ServerSocket(preKeyPort)
-        ) {
-            logger.info("SecureChat server started on message port {} and preKey port {}", messagePort, preKeyPort);
+        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            logger.info("SecureChat server started on port {}", port);
 
             while (isRunning) {
-                try {
-                    Socket messageSocket = messageServerSocket.accept();
-                    logger.info("Accepted message connection from {}", messageSocket.getRemoteSocketAddress());
+                Socket clientSocket = serverSocket.accept();
+                clientSocket.setSoTimeout(30000);
 
-                    Socket preKeySocket = preKeyServerSocket.accept();
-                    logger.info("Accepted preKey connection from {}", preKeySocket.getRemoteSocketAddress());
-
-                    PeerConnection conn = new PeerConnection(messageSocket, preKeySocket);
-                    pool.execute(() -> handleClient(conn));
-                } catch (Exception e) {
-                    logger.error("Error accepting new connection", e);
-                }
+                PeerConnection conn = new PeerConnection(clientSocket);
+                pool.execute(() -> handleClient(conn));
             }
         } catch (Exception e) {
-            logger.error("Server encountered a fatal error during startup", e);
-        }
-    }
-
-    public void stop() {
-        isRunning = false;
-        try {
-            pool.shutdownNow();
-            logger.info("Server shutdown initiated.");
-        } catch (Exception e) {
-            logger.warn("Error while shutting down the server", e);
+            logger.error("Server error", e);
         }
     }
 
     private void handleClient(PeerConnection conn) {
         try {
-            String userId = receiveUserId(conn);
-            if (userId == null) return;
+            while (isRunning) {
+                Object obj = conn.receiveMessageObject();
+                if (!(obj instanceof Packet packet)) {
+                    logger.warn("Expected Packet but got: {}", obj == null ? "null" : obj.getClass());
+                    continue;
+                }
 
-            if (!registerPreKey(conn, userId)) return;
-
-            messageRouter.registerPeer(userId, conn);
-            logger.info("Registered user '{}' with message router", userId);
-
-            pool.execute(() -> handlePreKeyPackets(conn, userId, deviceId));
-            processIncomingPackets(conn, userId);
+                switch (packet.getType()) {
+                    case PREKEY_BUNDLE -> handlePreKeyBundleRegistration(packet, conn);
+                    case GET_PREKEY_BUNDLE -> handlePreKeyBundleRequest(packet, conn);
+                    case PREKEY_MESSAGE, MESSAGE -> messageRouter.routeMessage(packet, packet.getSenderId());
+                    default -> logger.warn("Unknown packet type: {}", packet.getType());
+                }
+            }
         } catch (Exception e) {
-            logger.error("Error handling client '{}': {}", conn.getRemoteAddress(), e.getMessage(), e);
+            logger.error("Client handler error", e);
         } finally {
             try {
                 conn.close();
             } catch (Exception e) {
-                logger.warn("Failed to close connection cleanly for {}", conn.getRemoteAddress(), e);
+                logger.warn("Failed to close connection", e);
             }
         }
     }
 
-    private String receiveUserId(PeerConnection conn) {
-        try {
-            Object obj = conn.receiveMessageObject();
-            if (obj instanceof String userId) {
-                logger.debug("Received userId '{}'", userId);
-                return userId;
-            } else {
-                logger.error("Expected userId (String), but got: {}", obj.getClass());
-                conn.close();
-                return null;
+    private void handlePreKeyBundleRegistration(Packet packet, PeerConnection conn) {
+        String userId = packet.getSenderId();
+        int deviceId = packet.getSenderDeviceId();
+        PreKeyBundleDTO bundle = packet.getPreKeyBundlePayload();
+
+        if (userId == null || userId.isEmpty() || deviceId < 0 || bundle == null) {
+            logger.warn("Invalid PREKEY_BUNDLE registration packet");
+            sendError(conn, "Invalid PREKEY_BUNDLE packet");
+            return;
+        }
+
+        peerBundles.computeIfAbsent(userId, k -> new ConcurrentHashMap<>())
+                .put(deviceId, bundle);
+
+        messageRouter.registerPeer(userId, deviceId, conn);
+        logger.info("Registered prekey bundle for user '{}' device {}", userId, deviceId);
+    }
+
+    private void handlePreKeyBundleRequest(Packet packet, PeerConnection conn) {
+        // Use sender and recipient IDs from the packet directly
+        String requesterId = packet.getSenderId();
+        int requesterDeviceId = packet.getSenderDeviceId();
+
+        String targetUserId = packet.getRecipientId();
+        int targetDeviceId = packet.getRecipientDeviceId();
+
+        if (targetUserId == null || targetUserId.isEmpty() || targetDeviceId < 0) {
+            logger.warn("Invalid GET_PREKEY_BUNDLE request from '{}'", requesterId);
+            sendError(conn, "Invalid recipient info");
+            return;
+        }
+
+        PreKeyBundleDTO bundle = getPreKeyBundle(targetUserId, targetDeviceId);
+        if (bundle != null) {
+            try {
+                Packet response = new Packet(
+                    targetUserId,
+                    targetDeviceId,
+                    requesterId,
+                    requesterDeviceId,
+                    bundle
+                );
+                conn.sendMessageObject(response);
+                logger.info("Sent PREKEY_BUNDLE to '{}' for user '{}' device {}", requesterId, targetUserId, targetDeviceId);
+            } catch (Exception e) {
+                logger.error("Failed to send PREKEY_BUNDLE to '{}'", requesterId, e);
             }
-        } catch (Exception e) {
-            logger.error("Failed to receive userId", e);
-            return null;
+        } else {
+            logger.warn("No prekey bundle found for {} device {}", targetUserId, targetDeviceId);
+            sendError(conn, "PreKeyBundle not found for recipient");
         }
     }
 
-    private boolean registerPreKey(PeerConnection conn, String userId) {
+    private PreKeyBundleDTO getPreKeyBundle(String userId, int deviceId) {
+        Map<Integer, PreKeyBundleDTO> deviceMap = peerBundles.get(userId);
+        if (deviceMap != null) {
+            return deviceMap.get(deviceId);
+        }
+        return null;
+    }
+
+    private void sendError(PeerConnection conn, String message) {
         try {
-            Object obj = conn.receivePreKeyObject();
-            if (!(obj instanceof Packet packet)) {
-                logger.error("Expected Packet on preKey stream, got: {}", obj.getClass());
-                conn.close();
-                return false;
-            }
+            Packet errorPacket = new Packet();
+            errorPacket.setType(PacketType.ERROR);
+            errorPacket.setMessagePayload(message.getBytes(StandardCharsets.UTF_8));
+            errorPacket.setSenderId(null);
+            errorPacket.setRecipientId(null);
+            errorPacket.setSenderDeviceId(-1);
+            errorPacket.setRecipientDeviceId(-1);
 
-            if (packet.getType() != PacketType.PREKEY_BUNDLE || !(packet.getPayload() instanceof PreKeyBundleDTO bundle)) {
-                logger.error("Invalid PREKEY_BUNDLE payload from '{}': {}", userId, packet.getType());
-                conn.close();
-                return false;
-            }
-
-            preKeyStore.registerPreKeyBundle(userId, deviceId, bundle);
-            logger.info("Registered prekey bundle for user '{}'", userId);
-            return true;
+            conn.sendMessageObject(errorPacket);
         } catch (Exception e) {
-            logger.error("Error registering prekey for '{}': {}", userId, e.getMessage(), e);
-            return false;
+            logger.warn("Failed to send error packet: {}", e.getMessage());
         }
     }
 
-    private void processIncomingPackets(PeerConnection conn, String userId) {
-        try {
-            while (isRunning) {
-                Object obj = conn.receiveMessageObject();
-                if (!(obj instanceof Packet packet)) {
-                    logger.warn("Received invalid message packet from '{}': {}", userId, obj.getClass());
-                    continue;
-                }
-
-                switch (packet.getType()) {
-                    case MESSAGE -> {
-                        if (packet.getPayload() instanceof Message msg) {
-                            logger.info("Routing message from '{}' to '{}'", msg.getSender(), msg.getRecipient());
-                            messageRouter.routeMessage(msg);
-                        } else {
-                            logger.warn("Invalid MESSAGE payload from '{}'", userId);
-                        }
-                    }
-
-                    case ACK, ERROR, COMMAND -> {
-                        logger.debug("Received {} packet from '{}': {}", packet.getType(), userId, packet.getPayload());
-                    }
-
-                    default -> logger.warn("Unknown packet type from '{}': {}", userId, packet.getType());
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Error processing messages for '{}': {}", userId, e.getMessage(), e);
-        }
-    }
-
-    private void handlePreKeyPackets(PeerConnection conn, String userId, int deviceId) {
-        try {
-            while (isRunning) {
-                Object obj = conn.receivePreKeyObject();
-                if (!(obj instanceof Packet packet)) {
-                    logger.warn("Received invalid preKey packet from '{}': {}", userId, obj.getClass());
-                    continue;
-                }
-
-                switch (packet.getType()) {
-                    case GET_PREKEY_BUNDLE -> {
-                        if (packet.getPayload() instanceof String targetUser) {
-                            PreKeyBundleDTO bundle = preKeyStore.getPreKeyBundle(targetUser, deviceId);
-                            if (bundle != null) {
-                                conn.sendPreKeyObject(new Packet(PacketType.PREKEY_BUNDLE, bundle));
-                                logger.info("Sent preKey bundle for '{}'", targetUser);
-                            } else {
-                                conn.sendPreKeyObject(new Packet(PacketType.ERROR, "PreKey bundle not found for: " + targetUser));
-                                logger.warn("PreKey bundle not found for '{}'", targetUser);
-                            }
-                        }
-                    }
-
-                    case ACK, ERROR, COMMAND -> {
-                        logger.debug("Received {} on preKey stream from '{}': {}", packet.getType(), userId, packet.getPayload());
-                    }
-
-                    default -> logger.warn("Unknown preKey packet type from '{}': {}", userId, packet.getType());
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Error handling preKey packets for '{}': {}", userId, e.getMessage(), e);
-        }
+    public void stop() {
+        isRunning = false;
+        pool.shutdownNow();
+        logger.info("Server stopped");
     }
 }

@@ -1,9 +1,6 @@
 package com.securechat.network;
 
-import com.securechat.protocol.Message;
 import com.securechat.protocol.Packet;
-import com.securechat.protocol.PacketType;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,80 +8,138 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Manages active users and routes messages via their dedicated message and prekey connections.
+ * Routes messages and manages peer connections per user and device.
  */
 public class MessageRouter {
 
     private static final Logger logger = LoggerFactory.getLogger(MessageRouter.class);
 
     /**
-     * Maps userId to their PeerConnection (which internally manages dual streams).
+     * Maps userId -> (deviceId -> PeerConnection)
      */
-    private final Map<String, PeerConnection> activeUsers = new ConcurrentHashMap<>();
+    private final Map<String, Map<Integer, PeerConnection>> activePeers = new ConcurrentHashMap<>();
 
     /**
-     * Register a user with their dual-stream PeerConnection.
+     * Registers a peer connection for a specific user and device.
+     *
+     * @param userId     the user's unique ID
+     * @param deviceId   the device ID
+     * @param connection the peer connection to manage
      */
-    public void registerPeer(String userId, PeerConnection connection) {
-        activeUsers.put(userId, connection);
-        logger.info("Registered peer connection for user '{}'", userId);
+    public void registerPeer(String userId, int deviceId, PeerConnection connection) {
+        activePeers.computeIfAbsent(userId, k -> new ConcurrentHashMap<>())
+                   .put(deviceId, connection);
+        logger.info("Registered peer for user '{}' on device {}", userId, deviceId);
     }
 
     /**
-     * Routes a message packet to the recipient over their message stream.
-     * The message parameter here is expected to be the deserialized Message object,
-     * wrapped as a Packet elsewhere (so this method sends just the Message).
+     * Routes a message to the specific recipient and device.
+     *
+     * @param packet     the packet to route
+     * @param senderId   the sender's user ID
      */
-    public void routeMessage(Message message) {
-        PeerConnection recipientConnection = activeUsers.get(message.getRecipient());
+    public void routeMessage(Packet packet, String senderId) {
+        if (packet == null || packet.getRecipientId() == null) {
+            logger.warn("Invalid packet or recipientId; message dropped.");
+            return;
+        }
 
-        if (recipientConnection != null) {
+        String recipientId = packet.getRecipientId();
+        int recipientDeviceId = packet.getRecipientDeviceId();
+
+        PeerConnection recipientConn = getConnection(recipientId, recipientDeviceId);
+        if (recipientConn != null) {
             try {
-                // Use the message stream to send the message Packet
-                Packet packet = new Packet(PacketType.MESSAGE, message);
-                recipientConnection.sendMessageObject(packet);
-                logger.debug("Routed message from '{}' to '{}'", message.getSender(), message.getRecipient());
+                recipientConn.sendMessageObject(packet);
+                logger.debug("Routed message from '{}' to '{}@{}'", senderId, recipientId, recipientDeviceId);
             } catch (Exception e) {
-                logger.error("Failed to send message to user '{}'", message.getRecipient(), e);
+                logger.error("Failed to send message to '{}@{}'", recipientId, recipientDeviceId, e);
             }
         } else {
-            logger.warn("No active connection found for recipient '{}'. Message from '{}' dropped.",
-                        message.getRecipient(), message.getSender());
+            logger.warn("No connection for recipient '{}@{}'; packet dropped.", recipientId, recipientDeviceId);
         }
     }
 
     /**
-     * Routes prekey-related packets (e.g., PreKeyBundle requests/responses) over the prekey stream.
+     * Routes a PreKey-related packet.
+     *
+     * @param packet      the packet containing the PreKey bundle
+     * @param recipientId the user ID of the recipient
+     * @param deviceId    the target device ID
      */
-    public void routePreKeyPacket(Packet preKeyPacket, String recipientId) {
-        PeerConnection recipientConnection = activeUsers.get(recipientId);
-
-        if (recipientConnection != null) {
-            try {
-                recipientConnection.sendPreKeyObject(preKeyPacket);
-                logger.debug("Routed prekey packet of type '{}' to '{}'", preKeyPacket.getType(), recipientId);
-            } catch (Exception e) {
-                logger.error("Failed to send prekey packet to user '{}'", recipientId, e);
-            }
-        } else {
-            logger.warn("No active connection found for recipient '{}'. Prekey packet dropped.", recipientId);
+    public void routePreKeyPacket(Packet packet, String recipientId, int deviceId) {
+        if (packet == null || recipientId == null || packet.getPreKeyBundlePayload() == null) {
+            logger.warn("Invalid PreKey packet or missing payload; dropped.");
+            return;
         }
-    }
 
-    /**
-     * Unregisters a peer and closes their connection.
-     */
-    public void unregisterPeer(String userId) {
-        PeerConnection conn = activeUsers.remove(userId);
+        PeerConnection conn = getConnection(recipientId, deviceId);
         if (conn != null) {
             try {
-                conn.close();
-                logger.info("Closed connection and unregistered peer '{}'", userId);
+                conn.sendMessageObject(packet);
+                logger.debug("Routed PreKey packet to '{}@{}'", recipientId, deviceId);
             } catch (Exception e) {
-                logger.warn("Failed to close connection for peer '{}'", userId, e);
+                logger.error("Failed to route PreKey packet to '{}@{}'", recipientId, deviceId, e);
             }
         } else {
-            logger.info("Unregistered peer '{}'", userId);
+            logger.warn("No connection found for '{}@{}'; PreKey packet dropped.", recipientId, deviceId);
         }
+    }
+
+    /**
+     * Unregisters all devices for a given user and closes all associated connections.
+     *
+     * @param userId the user to unregister
+     */
+    public void unregisterPeer(String userId) {
+        Map<Integer, PeerConnection> connections = activePeers.remove(userId);
+        if (connections != null) {
+            connections.forEach((deviceId, conn) -> {
+                try {
+                    conn.close();
+                    logger.info("Closed connection for '{}@{}'", userId, deviceId);
+                } catch (Exception e) {
+                    logger.warn("Error closing connection for '{}@{}'", userId, deviceId, e);
+                }
+            });
+        } else {
+            logger.info("No active connections to unregister for '{}'", userId);
+        }
+    }
+
+    /**
+     * Unregisters a specific device for a user.
+     *
+     * @param userId   the user ID
+     * @param deviceId the device ID
+     */
+    public void unregisterPeerDevice(String userId, int deviceId) {
+        Map<Integer, PeerConnection> devices = activePeers.get(userId);
+        if (devices != null) {
+            PeerConnection conn = devices.remove(deviceId);
+            if (conn != null) {
+                try {
+                    conn.close();
+                    logger.info("Unregistered device {} for user '{}'", deviceId, userId);
+                } catch (Exception e) {
+                    logger.warn("Failed to close connection for '{}@{}'", userId, deviceId, e);
+                }
+            }
+            if (devices.isEmpty()) {
+                activePeers.remove(userId);
+            }
+        }
+    }
+
+    /**
+     * Retrieves a connection for a specific user and device.
+     *
+     * @param userId   the user ID
+     * @param deviceId the device ID
+     * @return the peer connection if active; otherwise null
+     */
+    private PeerConnection getConnection(String userId, int deviceId) {
+        Map<Integer, PeerConnection> devices = activePeers.get(userId);
+        return devices != null ? devices.get(deviceId) : null;
     }
 }
