@@ -1,11 +1,8 @@
 package com.securechat;
 
 import com.securechat.client.UserClient;
-import com.securechat.crypto.KeyManager;
-import com.securechat.crypto.libsignal.SignalKeyStore;
 import com.securechat.server.Server;
-import com.securechat.store.InMemoryPreKeyStore;
-import com.securechat.store.PreKeyStore;
+import com.securechat.store.SignalStore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,97 +11,76 @@ public class Launcher {
 
     private static final Logger logger = LoggerFactory.getLogger(Launcher.class);
 
-    private static final int SERVER_SIGNED_PREKEY_ID = 1;
-    private static final int SERVER_PREKEY_ID = 1;
-
+    private static final String SERVER_ID = "localhost";
     private static final int MESSAGE_PORT = 8888;
-    private static final int PREKEY_PORT = 9999;
 
     public static void main(String[] args) {
 
-        // === Device & Key IDs ===
-        int alicePreKeyId = 1001;
-        int aliceSignedPreKeyId = 1002;
-        int aliceDeviceId = 1;
+        final String aliceId = "alice";
+        final int aliceDeviceId = 1;
+        final int alicePreKeyId = 1001;
+        final int aliceSignedPreKeyId = 1002;
 
-        int bobPreKeyId = 2001;
-        int bobSignedPreKeyId = 2002;
-        int bobDeviceId = 1;
+        final String bobId = "bob";
+        final int bobDeviceId = 2;
+        final int bobPreKeyId = 2001;
+        final int bobSignedPreKeyId = 2002;
 
-        logger.info("Initializing key stores and preKey store");
-
-        // === Server State ===
-        PreKeyStore preKeyStore = new InMemoryPreKeyStore();
-        SignalKeyStore serverKeyStore = new SignalKeyStore();
-        initializeKeys(serverKeyStore);
-
-        // === Clients' State ===
-        SignalKeyStore aliceKeyStore = new SignalKeyStore();
-        initializeKeys(aliceKeyStore, alicePreKeyId, aliceSignedPreKeyId);
-
-        SignalKeyStore bobKeyStore = new SignalKeyStore();
-        initializeKeys(bobKeyStore, bobPreKeyId, bobSignedPreKeyId);
-
-        // === Start Server ===
-        Server server = new Server(MESSAGE_PORT, PREKEY_PORT, serverKeyStore, preKeyStore);
+        // Start the server
+        Server server = new Server(MESSAGE_PORT);
         Thread serverThread = new Thread(server::start, "ServerThread");
         serverThread.start();
-        logger.info("Server started on ports {} (messages) and {} (prekeys)", MESSAGE_PORT, PREKEY_PORT);
+        logger.info("Server started on port {}", MESSAGE_PORT);
 
-        waitMillis(1500); // Ensure server is ready
+        waitMillis(2000); // Give server time to start
 
-        // === Start Clients ===
-        UserClient bob = new UserClient("bob", bobDeviceId, bobKeyStore, bobPreKeyId, bobSignedPreKeyId);
-        bob.connectToServer("localhost", MESSAGE_PORT, PREKEY_PORT);
-        bob.listen();
+        // Create client stores (could be separate per client)
+        SignalStore aliceStore = new SignalStore();
+        SignalStore bobStore = new SignalStore();
 
-        UserClient alice = new UserClient("alice", aliceDeviceId, aliceKeyStore, alicePreKeyId, aliceSignedPreKeyId);
-        alice.connectToServer("localhost", MESSAGE_PORT, PREKEY_PORT);
-        alice.listen();
+        // Create clients with their stores
+        UserClient alice = new UserClient(aliceId, aliceDeviceId, aliceStore, alicePreKeyId, aliceSignedPreKeyId);
+        UserClient bob = new UserClient(bobId, bobDeviceId, bobStore, bobPreKeyId, bobSignedPreKeyId);
 
-        alice.addPeerDeviceId("bob", bobDeviceId);
-        bob.addPeerDeviceId("alice", aliceDeviceId);
+        // Initialize keys within clients
+        alice.initializeUser();
+        bob.initializeUser();
 
-        waitMillis(1000); // Allow time for prekey bundles to be registered
+        // Connect clients to the server
+        alice.connectToServer(SERVER_ID, MESSAGE_PORT);
+        alice.startListening();
 
-        // === Session Establishment ===
-        alice.establishSessionWith("bob");
-        bob.establishSessionWith("alice");
+        bob.connectToServer(SERVER_ID, MESSAGE_PORT);
+        bob.startListening();
+
+        // Register peers with device IDs
+        alice.addPeerDeviceId(bobId, bobDeviceId);
+        bob.addPeerDeviceId(aliceId, aliceDeviceId);
+
+        waitMillis(2500); // Wait for bundles to register
+
+        // Establish sessions
+        alice.establishSession(bobId, bobDeviceId);
+        bob.establishSession(aliceId, aliceDeviceId);
+
+        waitMillis(1000); // Wait for sessions to finalize
+
+        // Exchange messages
+        alice.sendMessage(bobId, "Hi Bob!");
+        bob.sendMessage(aliceId, "Hi Alice!");
 
         waitMillis(1000);
 
-        // === Exchange Messages ===
-        alice.sendMessage("bob", "Hi Bob!");
-        bob.sendMessage("alice", "Hi Alice!");
+        alice.sendMessage(bobId, "Are you available for a call?");
+        bob.sendMessage(aliceId, "Sure, let's do it!");
 
-        waitMillis(1000);
-
-        alice.sendMessage("bob", "Are you available for a call?");
-        bob.sendMessage("alice", "Sure, let's do it!");
-
-        // === Keep Main Thread Alive ===
+        // Keep main thread alive so clients can keep running
         try {
             Thread.currentThread().join();
         } catch (InterruptedException e) {
-            logger.error("Main thread interrupted, shutting down", e);
+            logger.error("Main thread interrupted", e);
             Thread.currentThread().interrupt();
         }
-    }
-
-    private static void initializeKeys(SignalKeyStore keyStore, int preKeyId, int signedPreKeyId) {
-        KeyManager keyManager = new KeyManager();
-
-        var preKey = keyManager.generatePreKey(preKeyId);
-        keyStore.storePreKey(preKeyId, preKey);
-
-        var signedPreKey = keyManager.generateSignedPreKey(keyStore.getIdentityKeyPair(), signedPreKeyId);
-        keyStore.storeSignedPreKey(signedPreKeyId, signedPreKey);
-
-        logger.debug("Initialized keys: preKeyId={}, signedPreKeyId={}", preKeyId, signedPreKeyId);
-    }
-
-    private static void initializeKeys(SignalKeyStore keyStore) {
-        initializeKeys(keyStore, SERVER_PREKEY_ID, SERVER_SIGNED_PREKEY_ID);
     }
 
     private static void waitMillis(long millis) {

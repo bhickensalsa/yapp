@@ -1,125 +1,105 @@
 package com.securechat.crypto.libsignal;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.whispersystems.libsignal.*;
-import org.whispersystems.libsignal.protocol.*;
-import org.whispersystems.libsignal.state.*;
+import org.whispersystems.libsignal.state.SignalProtocolStore;
+import org.whispersystems.libsignal.state.PreKeyBundle;
+import org.whispersystems.libsignal.state.SessionRecord;
+import org.whispersystems.libsignal.protocol.CiphertextMessage;
+import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
+import org.whispersystems.libsignal.protocol.SignalMessage;
 
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * Handles session creation, encryption, and decryption using the Signal Protocol.
- */
 public class SignalProtocolManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(SignalProtocolManager.class);
-
     private final SignalProtocolStore store;
+    private final Map<String, SessionBuilder> sessionBuilders = new HashMap<>();
 
     public SignalProtocolManager(SignalProtocolStore store) {
         this.store = store;
     }
 
-    /**
-     * Initializes a session with the recipient using their PreKeyBundle.
-     */
-    public void initializeSession(SignalProtocolAddress remoteAddress, PreKeyBundle preKeyBundle) {
-        try {
-            logger.debug("Initializing session with {}", remoteAddress);
-            SessionBuilder sessionBuilder = new SessionBuilder(store, remoteAddress);
-            sessionBuilder.process(preKeyBundle);
-            logger.info("Session successfully initialized with {}", remoteAddress);
-        } catch (InvalidKeyException | UntrustedIdentityException e) {
-            logger.error("Failed to initialize session with {}: {}", remoteAddress, e.getMessage(), e);
-        }
+    private String sessionKey(String peerId, int deviceId) {
+        return peerId + ":" + deviceId;
     }
 
     /**
-     * Encrypts a plaintext message using an existing session.
-     * Returns a SignalMessage that can be serialized and sent.
+     * Initialize or update a session with a peer's PreKeyBundle (used in session establishment)
      */
-    public SignalMessage encryptMessage(SignalProtocolAddress recipientAddress, String plaintext) {
+    public void initializeSession(String peerId, PreKeyBundle bundle) throws InvalidKeyException {
+        SignalProtocolAddress address = new SignalProtocolAddress(peerId, bundle.getDeviceId());
+        SessionBuilder builder = new SessionBuilder(store, address);
         try {
-            SessionCipher cipher = new SessionCipher(store, recipientAddress);
-            CiphertextMessage ciphertextMessage = cipher.encrypt(plaintext.getBytes(StandardCharsets.UTF_8));
-            // Construct SignalMessage from serialized bytes to ensure format
-            SignalMessage signalMessage = new SignalMessage(ciphertextMessage.serialize());
-            logger.info("SignalMessage successfully built for {}", recipientAddress);
-            return signalMessage;
-        } catch (UntrustedIdentityException e) {
-            logger.error("Untrusted identity while encrypting message for {}: {}", recipientAddress, e.getMessage(), e);
-            return null;
+            builder.process(bundle);
         } catch (Exception e) {
-            logger.error("Encryption failed for {}: {}", recipientAddress, e.getMessage(), e);
-            return null;
+            throw new InvalidKeyException("Failed to process PreKeyBundle", e);
         }
+        sessionBuilders.put(sessionKey(peerId, bundle.getDeviceId()), builder);
     }
 
     /**
-     * Decrypts a SignalMessage and returns the plaintext string.
+     * Checks if a session exists with the given peer device
      */
-    public String decryptMessage(SignalProtocolAddress address, SignalMessage message) {
+    public boolean hasSession(String peerId, int deviceId) {
+        SignalProtocolAddress address = new SignalProtocolAddress(peerId, deviceId);
         try {
-            logger.debug("Decrypting SignalMessage from {}", address);
-            SessionCipher cipher = new SessionCipher(store, address);
-            byte[] plaintext = cipher.decrypt(message);
-            logger.info("Successfully decrypted SignalMessage from {}", address);
-            return new String(plaintext, StandardCharsets.UTF_8);
+            SessionRecord record = store.loadSession(address);
+            return record != null && record.getSessionState().getSessionVersion() > 0;
         } catch (Exception e) {
-            logger.error("Failed to decrypt SignalMessage from {}: {}", address, e.getMessage(), e);
-            return null;
+            return false;
         }
     }
 
     /**
-     * Builds an initial PreKeySignalMessage using a PreKeyBundle.
-     * Returns the PreKeySignalMessage to be serialized and sent.
+     * Encrypt a message assuming a session exists (normal message)
      */
-    public PreKeySignalMessage buildInitialPreKeyMessage(SignalProtocolAddress recipient, PreKeyBundle bundle, String plaintext) {
-        try {
-            logger.debug("Building initial PreKeySignalMessage for {} using PreKeyBundle", recipient);
-
-            SessionBuilder sessionBuilder = new SessionBuilder(store, recipient);
-            sessionBuilder.process(bundle);
-
-            SessionCipher cipher = new SessionCipher(store, recipient);
-            CiphertextMessage ciphertextMessage = cipher.encrypt(plaintext.getBytes(StandardCharsets.UTF_8));
-
-            if (ciphertextMessage.getType() == CiphertextMessage.PREKEY_TYPE) {
-                PreKeySignalMessage preKeySignalMessage = new PreKeySignalMessage(ciphertextMessage.serialize());
-                logger.info("Initial PreKeySignalMessage successfully built for {}", recipient);
-                return preKeySignalMessage;
-            } else {
-                logger.error("Expected a PreKeySignalMessage but received a regular SignalMessage.");
-                return null;
-            }
-        } catch (Exception e) {
-            logger.error("Failed to build initial PreKeySignalMessage for {}: {}", recipient, e.getMessage(), e);
-            return null;
+    public byte[] encryptMessage(String peerId, int deviceId, String plaintext) throws Exception {
+        SignalProtocolAddress address = new SignalProtocolAddress(peerId, deviceId);
+        // Ensure session exists
+        if (!hasSession(peerId, deviceId)) {
+            throw new IllegalStateException("No session found with " + peerId + ":" + deviceId);
         }
+        SessionCipher cipher = new SessionCipher(store, address);
+        CiphertextMessage message = cipher.encrypt(plaintext.getBytes(StandardCharsets.UTF_8));
+        return message.serialize();
     }
 
     /**
-     * Decrypts a PreKeySignalMessage and returns the plaintext string.
+     * Encrypt a message as a PreKeySignalMessage (session not established yet)
+     * Usually used before session is established
      */
-    public String decryptPreKeyMessage(SignalProtocolAddress address, PreKeySignalMessage message) {
-        try {
-            logger.debug("Decrypting PreKeySignalMessage from {}", address);
-            SessionCipher cipher = new SessionCipher(store, address);
-            byte[] plaintext = cipher.decrypt(message);
-            logger.info("Successfully decrypted PreKeySignalMessage from {}", address);
-            return new String(plaintext, StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            logger.error("Failed to decrypt PreKeySignalMessage from {}: {}", address, e.getMessage(), e);
-            return null;
-        }
+    public byte[] encryptPreKeyMessage(String peerId, int deviceId, String plaintext) throws Exception {
+        SignalProtocolAddress address = new SignalProtocolAddress(peerId, deviceId);
+
+        SessionCipher cipher = new SessionCipher(store, address);
+        CiphertextMessage message = cipher.encrypt(plaintext.getBytes(StandardCharsets.UTF_8));
+        return message.serialize();
     }
 
     /**
-     * Checks if a session already exists with the given address.
+     * Decrypt a PreKeyMessage (initial session message)
      */
-    public boolean hasSession(String userId, int deviceId) {
-        return store.containsSession(new SignalProtocolAddress(userId, deviceId));
+    public String decryptPreKeyMessage(String senderId, int senderDeviceId, byte[] ciphertext) throws Exception {
+        SignalProtocolAddress address = new SignalProtocolAddress(senderId, senderDeviceId);
+        SessionCipher cipher = new SessionCipher(store, address);
+
+        PreKeySignalMessage preKeyMessage = new PreKeySignalMessage(ciphertext);
+        byte[] plaintextBytes = cipher.decrypt(preKeyMessage);
+        return new String(plaintextBytes, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Decrypt a normal message
+     */
+    public String decryptMessage(String senderId, int senderDeviceId, byte[] ciphertext) throws Exception {
+        SignalProtocolAddress address = new SignalProtocolAddress(senderId, senderDeviceId);
+        SessionCipher cipher = new SessionCipher(store, address);
+
+        SignalMessage message = new SignalMessage(ciphertext);
+        byte[] plaintextBytes = cipher.decrypt(message);
+        return new String(plaintextBytes, StandardCharsets.UTF_8);
     }
 }

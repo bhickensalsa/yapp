@@ -3,264 +3,278 @@ package com.securechat.client;
 import com.securechat.crypto.libsignal.SignalProtocolManager;
 import com.securechat.crypto.libsignal.PreKeyBundleBuilder;
 import com.securechat.crypto.libsignal.PreKeyBundleDTO;
-import com.securechat.crypto.libsignal.SignalKeyStore;
 import com.securechat.network.PeerConnection;
-import com.securechat.protocol.*;
+import com.securechat.protocol.Packet;
+import com.securechat.protocol.PacketType;
+import com.securechat.store.SignalStore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.whispersystems.libsignal.SignalProtocolAddress;
-import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
-import org.whispersystems.libsignal.protocol.SignalMessage;
+import org.whispersystems.libsignal.IdentityKeyPair;
 import org.whispersystems.libsignal.state.PreKeyBundle;
+import org.whispersystems.libsignal.state.PreKeyRecord;
+import org.whispersystems.libsignal.state.SignedPreKeyRecord;
+import org.whispersystems.libsignal.util.KeyHelper;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class UserClient {
     private static final Logger logger = LoggerFactory.getLogger(UserClient.class);
 
     private final String userId;
-    private final int deviceId;
-    private final SignalKeyStore keyStore;
-    private final SignalProtocolManager cryptoManager;
-
+    private final int userDeviceId;
+    private final SignalStore signalStore;
+    private final SignalProtocolManager SPManager;
+    
     private final int preKeyId;
     private final int signedPreKeyId;
-
+    
+    private int recipientDeviceId;
     private PeerConnection connection;
     private PreKeyBundle myBundle;
 
     private final Map<String, Integer> peerDeviceIds = new ConcurrentHashMap<>();
-
     private final ExecutorService pool = Executors.newCachedThreadPool();
 
-    public UserClient(String userId, int deviceId, SignalKeyStore keyStore, int preKeyId, int signedPreKeyId) {
+    private final Map<String, CompletableFuture<Packet>> pendingRequests = new ConcurrentHashMap<>();
+
+    public UserClient(String userId, int userDeviceId, SignalStore signalStore, int preKeyId, int signedPreKeyId) {
         this.userId = userId;
-        this.deviceId = deviceId;
-        this.keyStore = keyStore;
-        this.cryptoManager = new SignalProtocolManager(keyStore);
+        this.userDeviceId = userDeviceId;
+        this.signalStore = signalStore;
+        this.SPManager = new SignalProtocolManager(signalStore);
         this.preKeyId = preKeyId;
         this.signedPreKeyId = signedPreKeyId;
     }
 
-    public void connectToServer(String host, int messagePort, int preKeyPort) {
+    public void initializeUser() {
         try {
-            Socket messageSocket = new Socket(host, messagePort);
-            Socket preKeySocket = new Socket(host, preKeyPort);
-            this.connection = new PeerConnection(messageSocket, preKeySocket);
+            // Generate keys
+            IdentityKeyPair identityKeyPair = KeyHelper.generateIdentityKeyPair();
+            int registrationId = KeyHelper.generateRegistrationId(false);
 
-            // Send userId on message socket
-            connection.sendMessageObject(userId);
+            signalStore.initializeKeys(identityKeyPair, registrationId);
 
-            // Build and send PreKeyBundle on preKey socket
-            myBundle = PreKeyBundleBuilder.build(
-                    keyStore.getLocalRegistrationId(), deviceId,
-                    keyStore, preKeyId, signedPreKeyId
+            PreKeyRecord preKey = KeyHelper.generatePreKeys(preKeyId, 1).get(0);
+            SignedPreKeyRecord signedPreKey = KeyHelper.generateSignedPreKey(identityKeyPair, signedPreKeyId);
+
+            signalStore.storePreKey(preKeyId, preKey);
+            signalStore.storeSignedPreKey(signedPreKeyId, signedPreKey);
+
+            logger.info("User initialized with IdentityKeyPair, PreKey ID {}, and SignedPreKey ID {}", preKeyId, signedPreKeyId);
+        } catch (Exception e) {
+            logger.error("Failed to initialize user keys: {}", e.getMessage(), e);
+        }
+    }
+
+    public void connectToServer(String host, int port) {
+        try {
+            logger.info("Connecting to server at {}:{}", host, port);
+            Socket socket = new Socket(host, port);
+            this.connection = new PeerConnection(socket);
+
+            this.myBundle = PreKeyBundleBuilder.build(
+                    signalStore.getLocalRegistrationId(),
+                    userDeviceId,
+                    signalStore,
+                    preKeyId,
+                    signedPreKeyId
             );
+
             PreKeyBundleDTO dto = PreKeyBundleDTO.fromPreKeyBundle(myBundle);
 
-            connection.sendPreKeyObject(new Packet(userId, dto));
+            Packet preKeyPacket = new Packet(userId, userDeviceId, "server", 0, dto);
 
-            logger.info("Registered prekey bundle with server as '{}'", userId);
+            connection.sendMessageObject(preKeyPacket);
+
+            logger.info("Successfully registered PreKeyBundle with server as '{}'", userId);
         } catch (Exception e) {
-            logger.error("Connection or registration failed: {}", e.getMessage(), e);
+            logger.error("Failed to connect or register with server: {}", e.getMessage(), e);
+        }
+        startListening();
+    }
+    
+    public void establishSession(String peerId, int peerDeviceId) {
+        if (peerDeviceId == 0) {
+            logger.error("Invalid device ID 0 for peer '{}'. Cannot establish session.", peerId);
+            return;
+        }
+
+        fetchPreKeyBundle(peerId, peerDeviceId).thenAccept(bundle -> {
+            try {
+                recipientDeviceId = bundle.getDeviceId();
+                SPManager.initializeSession(peerId, bundle);
+                logger.info("Session successfully established with {}", peerId);
+                sendPreKeyMessage(peerId, "Hello from " + userId + "!");
+            } catch (Exception e) {
+                logger.error("Failed to establish session with {}: {}", peerId, e.getMessage(), e);
+            }
+        }).exceptionally(e -> {
+            logger.error("Failed to fetch prekey bundle for {}: {}", peerId, e.getMessage());
+            return null;
+        });
+    }
+
+    public CompletableFuture<PreKeyBundle> fetchPreKeyBundle(String peerId, int peerDeviceId) {
+        String pendingKey = peerId + ":" + PacketType.PREKEY_BUNDLE.name();
+
+        CompletableFuture<Packet> responseFuture = new CompletableFuture<>();
+        pendingRequests.put(pendingKey, responseFuture);
+
+        Packet requestPacket = new Packet(userId, userDeviceId, peerId, peerDeviceId);
+
+        try {
+            connection.sendMessageObject(requestPacket);
+            logger.info("Requested prekey bundle for peer '{}'", peerId);
+        } catch (Exception e) {
+            logger.error("Failed to send GET_PREKEY_BUNDLE for '{}': {}", peerId, e.getMessage());
+            pendingRequests.remove(pendingKey);
+            responseFuture.completeExceptionally(e);
+        }
+
+        return responseFuture.thenApply(packet -> {
+            PreKeyBundleDTO dto = packet.getPreKeyBundlePayload();
+            return dto.toPreKeyBundle();
+        });
+    }
+
+
+    private void sendPreKeyMessage(String recipientId, String message) {
+        try {
+            byte[] encrypted = SPManager.encryptPreKeyMessage(recipientId, recipientDeviceId, message);
+            Packet packet = new Packet(userId, userDeviceId, recipientId, recipientDeviceId, encrypted, PacketType.PREKEY_MESSAGE);
+            connection.sendMessageObject(packet);
+            logger.info("Sent PreKeyMessage to {}", recipientId);
+        } catch (Exception e) {
+            logger.error("Failed to send PreKeyMessage to {}: {}", recipientId, e.getMessage(), e);
         }
     }
 
-    public boolean establishSessionWith(String peerId) {
+    public void sendMessage(String recipientId, String message) {
         try {
-            int peerDeviceId = peerDeviceIds.getOrDefault(peerId, deviceId);
-            SignalProtocolAddress peerAddress = new SignalProtocolAddress(peerId, peerDeviceId);
+            boolean hasSession = SPManager.hasSession(recipientId, recipientDeviceId);
 
-            if (cryptoManager.hasSession(peerId, peerDeviceId)) {
-                logger.info("Session with {} already exists", peerId);
-                return true;
-            }
+            byte[] ciphertext;
+            PacketType packetType;
 
-            // Request peer's prekey bundle from server via preKey socket
-            connection.sendPreKeyObject(new Packet(userId, PacketType.GET_PREKEY_BUNDLE, peerId));
-            Object obj = connection.receivePreKeyObject();
-
-            if (!(obj instanceof Packet response)) {
-                logger.warn("Unexpected response on prekey stream: {}", obj);
-                return false;
-            }
-
-            if (response.getType() == PacketType.PREKEY_BUNDLE) {
-                PreKeyBundleDTO dto = response.getPreKeyBundlePayload();
-                if (dto == null) {
-                    logger.warn("PREKEY_BUNDLE packet missing payload");
-                    return false;
-                }
-
-                PreKeyBundle bundle = dto.toPreKeyBundle();
-
-                PreKeySignalMessage preKeySignalMessage = cryptoManager.buildInitialPreKeyMessage(peerAddress, bundle, "Hello from " + userId);
-                if (preKeySignalMessage != null) {
-                    byte[] serializedMessage = preKeySignalMessage.serialize();
-                    Packet packet = new Packet(PacketType.PREKEY_MESSAGE, serializedMessage, userId, peerId);
-                    sendPacket(packet);
-
-                    cryptoManager.initializeSession(peerAddress, bundle);
-
-                    logger.info("Sent initial PREKEY message and initialized session with {}", peerId);
-                    return true;
-                } else {
-                    logger.error("Failed to build initial PREKEY message for {}", peerId);
-                    return false;
-                }
-            }
-
-            if (response.getType() == PacketType.ERROR) {
-                String errorMessage = response.getStringPayload();
-                logger.error("PreKey error from server: {}", errorMessage);
+            if (!hasSession) {
+                ciphertext = SPManager.encryptPreKeyMessage(recipientId, recipientDeviceId, message);
+                packetType = PacketType.PREKEY_MESSAGE;
             } else {
-                logger.warn("Unexpected packet type during session setup: {}", response.getType());
-            }
-        } catch (Exception e) {
-            logger.error("Failed to establish session with {}: {}", peerId, e.getMessage(), e);
-        }
-        return false;
-    }
-
-    public boolean sendMessage(String recipientId, String plaintext) {
-        Integer peerDeviceId = peerDeviceIds.get(recipientId);
-        if (peerDeviceId == null) {
-            logger.warn("No device ID found for recipient {}, cannot send message", recipientId);
-            return false;
-        }
-
-        try {
-            SignalProtocolAddress recipientAddress = new SignalProtocolAddress(recipientId, peerDeviceId);
-
-            if (!cryptoManager.hasSession(recipientId, peerDeviceId)) {
-                logger.warn("No session established with {}, cannot encrypt message", recipientId);
-                return false;
+                ciphertext = SPManager.encryptMessage(recipientId, recipientDeviceId, message);
+                packetType = PacketType.MESSAGE;
             }
 
-            SignalMessage encryptedSignalMessage = cryptoManager.encryptMessage(recipientAddress, plaintext);
-            if (encryptedSignalMessage == null) {
-                logger.error("Encryption returned null for recipient {}", recipientId);
-                return false;
-            }
+            Packet packet = new Packet(userId, userDeviceId, recipientId, recipientDeviceId, ciphertext, packetType);
+            connection.sendMessageObject(packet);
 
-            byte[] serializedMessage = encryptedSignalMessage.serialize();
-
-            Packet encryptedPacket = new Packet(PacketType.MESSAGE, serializedMessage, userId, recipientId);
-            sendPacket(encryptedPacket);
-
-            logger.info("Sent encrypted message to {}", recipientId);
-            return true;
+            logger.info("Sent {} to {} ({} bytes)", packetType, recipientId, ciphertext.length);
 
         } catch (Exception e) {
             logger.error("Failed to send message to {}: {}", recipientId, e.getMessage(), e);
-            return false;
         }
     }
 
-    private void sendPacket(Packet packet) throws Exception {
-        if (connection == null) throw new IllegalStateException("Not connected");
-        connection.sendMessageObject(packet);
-    }
-
-    public void listen() {
-        pool.execute(() -> {
+    public void startListening() {
+        pool.submit(() -> {
             try {
-                while (true) {
-                    Object obj = connection.receiveMessageObject();
-
-                    if (!(obj instanceof Packet packet)) {
-                        logger.warn("Invalid object received: {}", obj);
-                        continue;
-                    }
-
-                    switch (packet.getType()) {
-                        case PREKEY_MESSAGE -> handlePreKeyMessage(packet);
-                        case MESSAGE -> handleMessage(packet);
-                        default -> logger.debug("Ignoring packet of type {}", packet.getType());
+                while (!Thread.currentThread().isInterrupted()) {
+                    Object received = connection.receiveMessageObject();
+                    if (received instanceof Packet packet) {
+                        handleIncomingPacket(packet);
+                    } else {
+                        logger.warn("Received unknown object: {}", received);
                     }
                 }
-            } catch (Exception e) {
-                logger.error("Listener stopped due to exception: {}", e.getMessage(), e);
+            } catch (IOException | ClassNotFoundException e) {
+                logger.error("Connection lost or error during listening: {}", e.getMessage(), e);
             }
         });
     }
 
-    private void handlePreKeyMessage(Packet packet) {
-        byte[] bytes = packet.getMessagePayload();
-        if (bytes == null) {
-            logger.warn("PREKEY_MESSAGE packet has null payload");
-            return;
-        }
-
-        Integer deviceId = peerDeviceIds.get(packet.getSender());
-        if (deviceId == null) {
-            logger.warn("Unknown deviceId for sender {}", packet.getSender());
-            return;
-        }
-
-        SignalProtocolAddress senderAddress = new SignalProtocolAddress(packet.getSender(), deviceId);
+    private void handleIncomingPacket(Packet packet) {
+        String senderId = packet.getSenderId();
+        int senderDeviceId = packet.getSenderDeviceId();
 
         try {
-            PreKeySignalMessage preKeySignalMessage = new PreKeySignalMessage(bytes);
-            String plaintext = cryptoManager.decryptPreKeyMessage(senderAddress, preKeySignalMessage);
-            if (plaintext != null) {
-                logger.info("Decrypted PREKEY message: {}", plaintext);
-                // TODO: handle decrypted plaintext
-            } else {
-                logger.warn("Failed to decrypt PREKEY message from {}", packet.getSender());
+            switch (packet.getType()) {
+                case PREKEY_BUNDLE:
+                    String key = senderId + ":" + PacketType.PREKEY_BUNDLE.name();
+                    CompletableFuture<Packet> future = pendingRequests.remove(key);
+                    if (future != null) {
+                        future.complete(packet);
+                        return; // no further processing needed here
+                    }
+                    break;
+
+                case PREKEY_MESSAGE:
+                    try {
+                        String plaintext = SPManager.decryptPreKeyMessage(senderId, senderDeviceId, packet.getMessagePayload());
+                        logger.info("Received from {} (device {}): {}", senderId, senderDeviceId, plaintext);
+                    } catch (Exception e) {
+                        logger.error("Failed to decrypt PreKeyMessage from {}: {}", senderId, e.getMessage(), e);
+                    }
+                    break;
+
+                case MESSAGE:
+                    if (!SPManager.hasSession(senderId, senderDeviceId)) {
+                        logger.warn("Received encrypted message from {} but no session exists, ignoring.", senderId);
+                        return;
+                    }
+                    String plaintext = SPManager.decryptMessage(senderId, senderDeviceId, packet.getMessagePayload());
+                    logger.info("Received from {} (device {}): {}", senderId, senderDeviceId, plaintext);
+                    break;
+
+                default:
+                    logger.warn("Unhandled packet type: {}", packet.getType());
             }
         } catch (Exception e) {
-            logger.warn("Failed to parse PreKeySignalMessage from bytes: {}", e.getMessage());
+            logger.error("Error processing incoming packet: {}", e.getMessage(), e);
         }
     }
 
-    private void handleMessage(Packet packet) {
-        byte[] bytes = packet.getMessagePayload();
-        if (bytes == null) {
-            logger.warn("MESSAGE packet has null payload");
-            return;
-        }
 
-        Integer deviceId = peerDeviceIds.get(packet.getSender());
-        if (deviceId == null) {
-            logger.warn("Unknown deviceId for sender {}", packet.getSender());
-            return;
-        }
-
-        SignalProtocolAddress senderAddress = new SignalProtocolAddress(packet.getSender(), deviceId);
-
-        try {
-            SignalMessage signalMessage = new SignalMessage(bytes);
-            String plaintext = cryptoManager.decryptMessage(senderAddress, signalMessage);
-            if (plaintext != null) {
-                logger.info("Decrypted message: {}", plaintext);
-                // TODO: handle decrypted plaintext
-            } else {
-                logger.warn("Failed to decrypt message from {}", packet.getSender());
-            }
-        } catch (Exception e) {
-            logger.warn("Failed to parse SignalMessage from bytes: {}", e.getMessage());
-        }
+    // Register a peer with their device ID
+    public void addPeerDeviceId(String peerUserId, int deviceId) {
+        peerDeviceIds.put(peerUserId, deviceId);
+        logger.info("Added peer '{}' with device ID {}", peerUserId, deviceId);
     }
 
-    public void disconnect() {
+    // Remove a peer and its device ID mapping
+    public void removePeerDeviceId(String peerUserId) {
+        peerDeviceIds.remove(peerUserId);
+        logger.info("Removed peer '{}'", peerUserId);
+    }
+
+
+    public void stop() {
+        logger.info("Stopping client '{}'", userId);
+
         try {
             if (connection != null) {
                 connection.close();
-                logger.info("Disconnected from server");
             }
-            pool.shutdownNow();
-        } catch (Exception e) {
-            logger.warn("Error while disconnecting: {}", e.getMessage(), e);
+        } catch (IOException e) {
+            logger.warn("Error closing connection: {}", e.getMessage(), e);
         }
-    }
 
-    public void addPeerDeviceId(String peerId, int deviceId) {
-        peerDeviceIds.put(peerId, deviceId);
+        pool.shutdownNow();
+        try {
+            if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
+                logger.warn("Executor did not terminate in time.");
+            }
+        } catch (InterruptedException e) {
+            logger.warn("Interrupted while waiting for executor shutdown.");
+            Thread.currentThread().interrupt();
+        }
+
+        logger.info("Client '{}' stopped.", userId);
     }
 }

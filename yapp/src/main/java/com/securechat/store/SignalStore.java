@@ -1,65 +1,75 @@
-package com.securechat.crypto.libsignal;
+package com.securechat.store;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.whispersystems.libsignal.*;
 import org.whispersystems.libsignal.state.*;
-import org.whispersystems.libsignal.util.KeyHelper;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SignalKeyStore implements SignalProtocolStore {
+public class SignalStore implements SignalProtocolStore {
 
-    private static final Logger logger = LoggerFactory.getLogger(SignalKeyStore.class);
+    private static final Logger logger = LoggerFactory.getLogger(SignalStore.class);
 
-    private final IdentityKeyPair identityKeyPair;
-    private final int registrationId;
+    private IdentityKeyPair identityKeyPair;
+    private int registrationId;
 
     private final Map<Integer, PreKeyRecord> preKeyStore = new ConcurrentHashMap<>();
     private final Map<Integer, SignedPreKeyRecord> signedPreKeyStore = new ConcurrentHashMap<>();
     private final Map<SignalProtocolAddress, SessionRecord> sessionStore = new ConcurrentHashMap<>();
     private final Map<SignalProtocolAddress, IdentityKey> identityStore = new ConcurrentHashMap<>();
 
-    public SignalKeyStore() {
-        this.identityKeyPair = KeyHelper.generateIdentityKeyPair();
-        this.registrationId = KeyHelper.generateRegistrationId(false);
-        logger.info("Generated new IdentityKeyPair and registrationId {}", registrationId);
+    public SignalStore() {
+        // Keys to be initialized by initializeKeys()
+    }
+
+    public void initializeKeys(IdentityKeyPair identityKeyPair, int registrationId) {
+        this.identityKeyPair = identityKeyPair;
+        this.registrationId = registrationId;
+        logger.info("Initialized IdentityKeyPair and registration ID {}", registrationId);
+    }
+
+    public void storePreKeyRecord(PreKeyRecord record) {
+        preKeyStore.put(record.getId(), record);
+        logger.info("Stored PreKey with ID: {}", record.getId());
+    }
+
+    public void storeSignedPreKeyRecord(SignedPreKeyRecord record) {
+        signedPreKeyStore.put(record.getId(), record);
+        logger.info("Stored SignedPreKey with ID: {}", record.getId());
     }
 
     // === IdentityKeyStore ===
 
     @Override
     public IdentityKeyPair getIdentityKeyPair() {
+        if (identityKeyPair == null) {
+            throw new IllegalStateException("IdentityKeyPair not initialized");
+        }
         logger.debug("Retrieving IdentityKeyPair");
         return identityKeyPair;
     }
 
     @Override
     public int getLocalRegistrationId() {
-        logger.debug("Retrieving local registration ID: {}", registrationId);
         return registrationId;
     }
 
     @Override
     public boolean saveIdentity(SignalProtocolAddress address, IdentityKey identityKey) {
-        logger.debug("Saving identity for address: {}", address);
         IdentityKey existing = identityStore.get(address);
         if (existing == null || !existing.equals(identityKey)) {
             identityStore.put(address, identityKey);
-            logger.info("{} identity saved/updated for address: {}", (existing == null ? "New" : "Updated"), address);
             return true;
         }
-        logger.debug("Identity for address {} unchanged", address);
         return false;
     }
 
     @Override
     public IdentityKey getIdentity(SignalProtocolAddress address) {
-        logger.debug("Getting identity for address: {}", address);
         return identityStore.get(address);
     }
 
@@ -67,10 +77,8 @@ public class SignalKeyStore implements SignalProtocolStore {
 
     @Override
     public PreKeyRecord loadPreKey(int preKeyId) throws InvalidKeyIdException {
-        logger.debug("Loading PreKey with ID: {}", preKeyId);
         PreKeyRecord record = preKeyStore.get(preKeyId);
         if (record == null) {
-            logger.error("PreKey with ID {} not found", preKeyId);
             throw new InvalidKeyIdException("No such pre-key: " + preKeyId);
         }
         return record;
@@ -79,30 +87,24 @@ public class SignalKeyStore implements SignalProtocolStore {
     @Override
     public void storePreKey(int preKeyId, PreKeyRecord record) {
         preKeyStore.put(preKeyId, record);
-        logger.info("Stored PreKey with ID: {}", preKeyId);
     }
 
     @Override
     public boolean containsPreKey(int preKeyId) {
-        boolean contains = preKeyStore.containsKey(preKeyId);
-        logger.debug("Contains PreKey ID {}: {}", preKeyId, contains);
-        return contains;
+        return preKeyStore.containsKey(preKeyId);
     }
 
     @Override
     public void removePreKey(int preKeyId) {
         preKeyStore.remove(preKeyId);
-        logger.info("Removed PreKey with ID: {}", preKeyId);
     }
 
     // === SignedPreKeyStore ===
 
     @Override
     public SignedPreKeyRecord loadSignedPreKey(int signedPreKeyId) throws InvalidKeyIdException {
-        logger.debug("Loading SignedPreKey with ID: {}", signedPreKeyId);
         SignedPreKeyRecord record = signedPreKeyStore.get(signedPreKeyId);
         if (record == null) {
-            logger.error("SignedPreKey with ID {} not found", signedPreKeyId);
             throw new InvalidKeyIdException("No such signed pre-key: " + signedPreKeyId);
         }
         return record;
@@ -111,25 +113,20 @@ public class SignalKeyStore implements SignalProtocolStore {
     @Override
     public void storeSignedPreKey(int signedPreKeyId, SignedPreKeyRecord record) {
         signedPreKeyStore.put(signedPreKeyId, record);
-        logger.info("Stored SignedPreKey with ID: {}", signedPreKeyId);
     }
 
     @Override
     public boolean containsSignedPreKey(int signedPreKeyId) {
-        boolean contains = signedPreKeyStore.containsKey(signedPreKeyId);
-        logger.debug("Contains SignedPreKey ID {}: {}", signedPreKeyId, contains);
-        return contains;
+        return signedPreKeyStore.containsKey(signedPreKeyId);
     }
 
     @Override
     public void removeSignedPreKey(int signedPreKeyId) {
         signedPreKeyStore.remove(signedPreKeyId);
-        logger.info("Removed SignedPreKey with ID: {}", signedPreKeyId);
     }
 
     @Override
     public List<SignedPreKeyRecord> loadSignedPreKeys() {
-        logger.debug("Loading all SignedPreKeys");
         return new ArrayList<>(signedPreKeyStore.values());
     }
 
@@ -137,62 +134,48 @@ public class SignalKeyStore implements SignalProtocolStore {
 
     @Override
     public SessionRecord loadSession(SignalProtocolAddress address) {
-        logger.debug("Loading session for address: {}", address);
         return sessionStore.getOrDefault(address, new SessionRecord());
     }
 
     @Override
     public List<Integer> getSubDeviceSessions(String name) {
-        logger.debug("Getting sub-device sessions for user: {}", name);
         List<Integer> deviceIds = new ArrayList<>();
         for (SignalProtocolAddress addr : sessionStore.keySet()) {
             if (addr.getName().equals(name)) {
                 deviceIds.add(addr.getDeviceId());
             }
         }
-        logger.debug("Found {} sub-device sessions for user {}", deviceIds.size(), name);
         return deviceIds;
     }
 
     @Override
     public void storeSession(SignalProtocolAddress address, SessionRecord record) {
         sessionStore.put(address, record);
-        logger.info("Stored session for address: {}", address);
+        logger.debug("Stored session for {} device {}", address.getName(), address.getDeviceId());
     }
 
     @Override
     public boolean containsSession(SignalProtocolAddress address) {
-        boolean contains = sessionStore.containsKey(address);
-        logger.debug("Contains session for address {}: {}", address, contains);
-        if (!contains) {
-            logger.debug("Current stored sessions: {}", sessionStore.keySet());
-        }
-        return contains;
+        return sessionStore.containsKey(address);
     }
 
     @Override
     public void deleteSession(SignalProtocolAddress address) {
         sessionStore.remove(address);
-        logger.info("Deleted session for address: {}", address);
+        logger.debug("Deleted session for {} device {}", address.getName(), address.getDeviceId());
     }
 
     @Override
     public void deleteAllSessions(String name) {
-        logger.info("Deleting all sessions for user: {}", name);
         sessionStore.keySet().removeIf(addr -> addr.getName().equals(name));
+        logger.debug("Deleted all sessions for user {}", name);
     }
 
-    // === IdentityKeyStore trust checking ===
+    // === Trusted Identity ===
 
     @Override
     public boolean isTrustedIdentity(SignalProtocolAddress address, IdentityKey identityKey, Direction direction) {
         IdentityKey trusted = identityStore.get(address);
-        if (trusted == null) {
-            logger.warn("No trusted identity for address {}, trusting first seen key", address);
-            return true;
-        }
-        boolean trustedMatch = trusted.equals(identityKey);
-        logger.debug("Is trusted identity for {}: {}", address, trustedMatch);
-        return trustedMatch;
+        return trusted == null || trusted.equals(identityKey);
     }
 }
