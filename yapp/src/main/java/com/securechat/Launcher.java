@@ -34,11 +34,11 @@ public class Launcher {
 
         waitMillis(2000); // Give server time to start
 
-        // Create client stores (could be separate per client)
+        // Create client stores (one per client)
         SignalStore aliceStore = new SignalStore();
         SignalStore bobStore = new SignalStore();
 
-        // Create clients with their stores
+        // Create clients with their stores and key IDs
         UserClient alice = new UserClient(aliceId, aliceDeviceId, aliceStore, alicePreKeyId, aliceSignedPreKeyId);
         UserClient bob = new UserClient(bobId, bobDeviceId, bobStore, bobPreKeyId, bobSignedPreKeyId);
 
@@ -47,32 +47,30 @@ public class Launcher {
         bob.initializeUser();
 
         // Connect clients to the server
-        alice.connectToServer(SERVER_ID, MESSAGE_PORT);
-        alice.startListening();
-
-        bob.connectToServer(SERVER_ID, MESSAGE_PORT);
-        bob.startListening();
-
-        // Register peers with device IDs
-        alice.addPeerDeviceId(bobId, bobDeviceId);
-        bob.addPeerDeviceId(aliceId, aliceDeviceId);
+        try {
+            alice.connectToServer(SERVER_ID, MESSAGE_PORT);
+            bob.connectToServer(SERVER_ID, MESSAGE_PORT);
+        } catch (Exception e) {
+            logger.error("Failed to connect clients to server", e);
+            return;
+        }
 
         waitMillis(2500); // Wait for bundles to register
 
-        // Establish sessions
+        // Establish sessions (one side initiates)
         alice.establishSession(bobId, bobDeviceId);
-        bob.establishSession(aliceId, aliceDeviceId);
+        //bob.establishSession(aliceId, aliceDeviceId); // Optional, Bob can wait for Alice's prekey message
 
-        waitMillis(1000); // Wait for sessions to finalize
+        waitMillis(2500); // Wait for sessions to finalize
 
-        // Exchange messages
-        alice.sendMessage(bobId, "Hi Bob!");
-        bob.sendMessage(aliceId, "Hi Alice!");
+        // Exchange messages, specifying peer device IDs explicitly
+        alice.sendMessage(bobId, bobDeviceId, "Hi Bob!");
+        bob.sendMessage(aliceId, aliceDeviceId, "Hi Alice!");
 
         waitMillis(1000);
 
-        alice.sendMessage(bobId, "Are you available for a call?");
-        bob.sendMessage(aliceId, "Sure, let's do it!");
+        alice.sendMessage(bobId, bobDeviceId, "Are you available for a call?");
+        bob.sendMessage(aliceId, aliceDeviceId, "Sure, let's do it!");
 
         // Keep main thread alive so clients can keep running
         try {

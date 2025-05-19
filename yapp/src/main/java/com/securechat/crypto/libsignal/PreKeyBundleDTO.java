@@ -14,6 +14,7 @@ public class PreKeyBundleDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(PreKeyBundleDTO.class);
+    private static final String LOG_PREFIX = "[PreKeyBundleDTO]";
     private static final Gson gson = new Gson();
 
     private int registrationId;
@@ -26,8 +27,8 @@ public class PreKeyBundleDTO implements Serializable {
     private String identityKey; // Base64
 
     public static PreKeyBundleDTO fromPreKeyBundle(PreKeyBundle bundle) {
-        logger.debug("Converting PreKeyBundle to DTO for registrationId={}, deviceId={}",
-                bundle.getRegistrationId(), bundle.getDeviceId());
+        logger.debug("{} Converting PreKeyBundle to DTO for registrationId={}, deviceId={}",
+                LOG_PREFIX, bundle.getRegistrationId(), bundle.getDeviceId());
 
         PreKeyBundleDTO dto = new PreKeyBundleDTO();
         dto.setRegistrationId(bundle.getRegistrationId());
@@ -39,12 +40,12 @@ public class PreKeyBundleDTO implements Serializable {
         dto.setSignedPreKeySignature(Base64.getEncoder().encodeToString(bundle.getSignedPreKeySignature()));
         dto.setIdentityKey(Base64.getEncoder().encodeToString(bundle.getIdentityKey().serialize()));
 
-        logger.info("PreKeyBundleDTO created successfully");
+        logger.info("{} PreKeyBundleDTO created successfully", LOG_PREFIX);
         return dto;
     }
 
     public PreKeyBundle toPreKeyBundle() {
-        logger.debug("Converting DTO to PreKeyBundle for registrationId={}, deviceId={}", registrationId, deviceId);
+        logger.debug("{} Converting DTO to PreKeyBundle for registrationId={}, deviceId={}", LOG_PREFIX, registrationId, deviceId);
         try {
             validateFields();
 
@@ -59,22 +60,22 @@ public class PreKeyBundleDTO implements Serializable {
                     new IdentityKey(Base64.getDecoder().decode(identityKey), 0)
             );
         } catch (Exception e) {
-            logger.error("Failed to convert DTO to PreKeyBundle", e);
+            logger.error("{} Failed to convert DTO to PreKeyBundle", LOG_PREFIX, e);
             throw new RuntimeException("Failed to convert DTO to PreKeyBundle", e);
         }
     }
 
     public String toJson() {
-        logger.debug("Serializing PreKeyBundleDTO to JSON");
+        logger.debug("{} Serializing PreKeyBundleDTO to JSON", LOG_PREFIX);
         return gson.toJson(this);
     }
 
     public static PreKeyBundleDTO fromJson(String json) {
-        logger.debug("Deserializing JSON to PreKeyBundleDTO");
+        logger.debug("{} Deserializing JSON to PreKeyBundleDTO", LOG_PREFIX);
         try {
             return gson.fromJson(json, PreKeyBundleDTO.class);
         } catch (Exception e) {
-            logger.error("Failed to deserialize JSON to PreKeyBundleDTO", e);
+            logger.error("{} Failed to deserialize JSON to PreKeyBundleDTO", LOG_PREFIX, e);
             throw e;
         }
     }
