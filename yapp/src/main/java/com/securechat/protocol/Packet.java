@@ -22,11 +22,9 @@ public class Packet implements Serializable {
     }
 
     // PREKEY_BUNDLE packet constructor — includes senderDeviceId
-    public Packet(String senderId, int senderDeviceId, String recipientId, int recipientDeviceId, PreKeyBundleDTO preKeyBundle) {
+    public Packet(String senderId, int senderDeviceId, PreKeyBundleDTO preKeyBundle) {
         this.senderId = senderId;
         this.senderDeviceId = senderDeviceId;
-        this.recipientId = recipientId;
-        this.recipientDeviceId = recipientDeviceId;
         this.preKeyBundlePayload = preKeyBundle;
         this.type = PacketType.PREKEY_BUNDLE;
     }
@@ -42,8 +40,8 @@ public class Packet implements Serializable {
 
     // MESSAGE and PREKEY_MESSAGE packet constructor with encrypted payload and senderDeviceId
     public Packet(String senderId, int senderDeviceId, String recipientId, int recipientDeviceId, byte[] messagePayload, PacketType type) {
-        if (type != PacketType.MESSAGE && type != PacketType.PREKEY_MESSAGE) {
-            throw new IllegalArgumentException("Only MESSAGE and PREKEY_MESSAGE packet types allowed for this constructor");
+        if (type != PacketType.MESSAGE && type != PacketType.PREKEY_MESSAGE && type != PacketType.ACK) {
+            throw new IllegalArgumentException("Only MESSAGE, ACK, and PREKEY_MESSAGE packet types allowed for this constructor");
         }
         this.senderId = senderId;
         this.senderDeviceId = senderDeviceId;
