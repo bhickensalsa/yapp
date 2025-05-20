@@ -10,11 +10,39 @@ import org.whispersystems.libsignal.state.PreKeyRecord;
 import org.whispersystems.libsignal.state.SignalProtocolStore;
 import org.whispersystems.libsignal.state.SignedPreKeyRecord;
 
+/**
+ * Utility class for constructing {@link PreKeyBundle} instances from a given
+ * {@link SignalProtocolStore} using specified pre-key and signed pre-key IDs.
+ *
+ * <p>This builder loads the necessary key records from the store, validates the
+ * presence of the user's identity key, and combines these elements into a
+ * {@link PreKeyBundle} suitable for distribution or session establishment.
+ * 
+ * @author bhickensalsa
+ * @version 0.1
+ */
 public class PreKeyBundleBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(PreKeyBundleBuilder.class);
     private static final String LOG_PREFIX = "[PreKeyBundleBuilder]";
 
+    /**
+     * Builds a {@link PreKeyBundle} for the specified registration and device IDs
+     * by retrieving the pre-key and signed pre-key records from the given
+     * {@link SignalProtocolStore}.
+     *
+     * <p>Throws an {@link IllegalStateException} if the pre-key or signed pre-key
+     * cannot be loaded, or if the identity key is not initialized in the store.
+     *
+     * @param registrationId The registration ID of the user/device
+     * @param deviceId The device ID
+     * @param store The {@link SignalProtocolStore} containing key records
+     * @param preKeyId The ID of the pre-key record to load
+     * @param signedPreKeyId The ID of the signed pre-key record to load
+     * @return A fully constructed {@link PreKeyBundle} with keys and signatures
+     * @throws InvalidKeyException If the keys are invalid or corrupted
+     * @throws IllegalStateException If keys cannot be loaded or identity key is missing
+     */
     public static PreKeyBundle build(int registrationId, int deviceId, SignalProtocolStore store,
                                      int preKeyId, int signedPreKeyId) throws InvalidKeyException {
 

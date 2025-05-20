@@ -12,6 +12,20 @@ import com.securechat.crypto.libsignal.SignalProtocolManager;
 import com.securechat.protocol.Packet;
 import com.securechat.protocol.PacketType;
 
+/**
+ * Manages sending, receiving, and processing of encrypted packets for a user's device.
+ *
+ * <p>This class listens for incoming packets from a peer connection, handles
+ * decryption and processing based on packet type, and supports sending encrypted
+ * messages and acknowledgments. It uses a dedicated single-threaded executor
+ * to process incoming packets asynchronously.
+ *
+ * <p>Pending requests (such as PreKey bundle retrievals) are tracked using
+ * CompletableFutures to support asynchronous workflows.
+ * 
+ * @author bhickensalsa
+ * @version 0.1
+ */
 public class PacketManager {
     private static final Logger logger = LoggerFactory.getLogger(PacketManager.class);
 
@@ -22,6 +36,16 @@ public class PacketManager {
     private final ExecutorService pool;
     private final Map<String, CompletableFuture<Packet>> pendingRequests;
 
+    /**
+     * Constructs a PacketManager for the specified user device, managing
+     * communication via the provided PeerConnection and SignalProtocolManager.
+     *
+     * @param userId          the user ID associated with this PacketManager (non-null)
+     * @param userDeviceId    the device ID for the user
+     * @param connection      the active PeerConnection for sending/receiving packets (non-null)
+     * @param SPManager       the SignalProtocolManager used for encryption/decryption (non-null)
+     * @param pendingRequests a map tracking pending CompletableFuture responses keyed by unique request IDs (non-null)
+     */
     public PacketManager(String userId, int userDeviceId,
                          PeerConnection connection,
                          SignalProtocolManager SPManager,
@@ -34,6 +58,13 @@ public class PacketManager {
         this.pool = Executors.newSingleThreadExecutor();
     }
 
+    /**
+     * Starts listening for incoming packets on a background thread.
+     * Incoming objects received from the PeerConnection are expected to be
+     * {@link Packet} instances, which will be processed accordingly.
+     *
+     * <p>This method returns immediately; processing happens asynchronously.
+     */
     public void startListening() {
         logger.info("[{}] PacketManager started listening", userId);
         pool.submit(() -> {
@@ -52,6 +83,61 @@ public class PacketManager {
         });
     }
 
+    /**
+     * Sends an encrypted message packet of the specified type to the given peer device.
+     *
+     * @param peerId       the recipient user's ID (non-null)
+     * @param peerDeviceId the recipient device ID
+     * @param message      the plaintext message to send (non-null)
+     * @param type         the packet type; must be PREKEY_MESSAGE or MESSAGE
+     */
+    public void sendMessage(String peerId, int peerDeviceId, String message, PacketType type) {
+        try {
+            byte[] encrypted = switch (type) {
+                case PREKEY_MESSAGE -> SPManager.encryptPreKeyMessage(peerId, peerDeviceId, message);
+                case MESSAGE -> SPManager.encryptMessage(peerId, peerDeviceId, message);
+                default -> throw new IllegalArgumentException("Unsupported packet type: " + type);
+            };
+
+            Packet packet = new Packet(userId, userDeviceId, peerId, peerDeviceId, encrypted, type);
+            connection.sendMessageObject(packet);
+
+            logger.info("[{}] Sent {} to {}", userId, type, peerId);
+        } catch (Exception e) {
+            logger.error("[{}] Failed to send {} to {}: {}", userId, type, peerId, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Sends an acknowledgment (ACK) packet to the specified peer device.
+     *
+     * @param peerId       the recipient user's ID (non-null)
+     * @param peerDeviceId the recipient device ID
+     */
+    public void sendAck(String peerId, int peerDeviceId) {
+        try {
+            Packet ack = new Packet(userId, userDeviceId, peerId, peerDeviceId, null, PacketType.ACK);
+            connection.sendMessageObject(ack);
+            logger.info("[{}] Sent ACK to {}:{}", userId, peerId, peerDeviceId);
+        } catch (Exception e) {
+            logger.error("[{}] Failed to send ACK to {}:{}", userId, peerId, peerDeviceId, e);
+        }
+    }
+
+    /**
+     * Stops listening for incoming packets and shuts down the internal thread pool.
+     * Once shut down, this PacketManager will no longer process incoming packets.
+     */
+    public void shutdown() {
+        pool.shutdownNow();
+        logger.info("[{}] PacketManager listener shutdown", userId);
+    }
+
+    /**
+     * Internal method to process an incoming packet based on its type.
+     *
+     * @param packet the received packet (non-null)
+     */
     private void handleIncomingPacket(Packet packet) {
         String senderId = packet.getSenderId();
         int senderDeviceId = packet.getSenderDeviceId();
@@ -90,21 +176,20 @@ public class PacketManager {
                 }
 
                 case ERROR -> {
-                    String errorMsg = new String(packet.getMessagePayload()); // assuming it's just a UTF-8 string
+                    String errorMsg = new String(packet.getMessagePayload());
                     logger.error("[{}] Received ERROR packet from {}: {}", userId, senderKey, errorMsg);
-                    // Future enhancement: map to pending request or notify listener
+                    // Future: map error to pending request or notify listener
                 }
 
                 case COMMAND -> {
                     String command = new String(packet.getMessagePayload());
                     logger.info("[{}] Received COMMAND from {}: {}", userId, senderKey, command);
-                    // Optionally, forward to helper class for execution
-                    //CommandHandler.handle(userId, senderId, command); // Maybe implement in a new client helper/util class
+                    // Optional: forward to command handler
                 }
 
                 case GET_PREKEY_BUNDLE -> {
                     logger.warn("[{}] Received unexpected GET_PREKEY_BUNDLE from {}", userId, senderKey);
-                    // Usually sent *to* server, not expected *from* peer
+                    // Typically sent to server, not expected from peer
                 }
 
                 default -> {
@@ -114,38 +199,5 @@ public class PacketManager {
         } catch (Exception e) {
             logger.error("[{}] Error processing packet from {}: {}", userId, senderKey, e.getMessage(), e);
         }
-    }
-
-
-    public void sendMessage(String peerId, int peerDeviceId, String message, PacketType type) {
-        try {
-            byte[] encrypted = switch (type) {
-                case PREKEY_MESSAGE -> SPManager.encryptPreKeyMessage(peerId, peerDeviceId, message);
-                case MESSAGE -> SPManager.encryptMessage(peerId, peerDeviceId, message);
-                default -> throw new IllegalArgumentException("Unsupported packet type: " + type);
-            };
-
-            Packet packet = new Packet(userId, userDeviceId, peerId, peerDeviceId, encrypted, type);
-            connection.sendMessageObject(packet);
-
-            logger.info("[{}] Sent {} to {}", userId, type, peerId);
-        } catch (Exception e) {
-            logger.error("[{}] Failed to send {} to {}: {}", userId, type, peerId, e.getMessage(), e);
-        }
-    }
-
-    public void sendAck(String peerId, int peerDeviceId) {
-        try {
-            Packet ack = new Packet(userId, userDeviceId, peerId, peerDeviceId, null, PacketType.ACK);
-            connection.sendMessageObject(ack);
-            logger.info("[{}] Sent ACK to {}:{}", userId, peerId, peerDeviceId);
-        } catch (Exception e) {
-            logger.error("[{}] Failed to send ACK to {}:{}", userId, peerId, peerDeviceId, e);
-        }
-    }
-
-    public void shutdown() {
-        pool.shutdownNow();
-        logger.info("[{}] PacketManager listener shutdown", userId);
     }
 }

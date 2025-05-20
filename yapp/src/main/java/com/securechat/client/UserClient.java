@@ -17,6 +17,19 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.*;
 
+/**
+ * The {@code UserClient} class encapsulates the behavior of a SecureChat client instance.
+ * Each client manages cryptographic material, establishes secure sessions with peers,
+ * registers its public PreKeyBundle to the server, and handles encrypted message sending.
+ *
+ * <p>It leverages Signal Protocol (X3DH and Double Ratchet) and acts as the client's
+ * main integration point with the server through {@link PeerConnection} and {@link PacketManager}.
+ *
+ * <p>Note: Message encryption/decryption and session management are handled entirely on the client.
+ *
+ * @author bhickensalsa
+ * @version 0.1
+ */
 public class UserClient {
     private static final Logger logger = LoggerFactory.getLogger(UserClient.class);
 
@@ -35,6 +48,15 @@ public class UserClient {
     private final ConcurrentHashMap<String, CompletableFuture<Packet>> pendingRequests = new ConcurrentHashMap<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
+    /**
+     * Constructs a new UserClient instance for a specific user and device.
+     *
+     * @param userId         Unique identifier for the user.
+     * @param userDeviceId   Unique identifier for this device.
+     * @param signalStore    Local storage for cryptographic state.
+     * @param preKeyId       PreKey ID used for registration.
+     * @param signedPreKeyId SignedPreKey ID used for registration.
+     */
     public UserClient(String userId, int userDeviceId, SignalStore signalStore, int preKeyId, int signedPreKeyId) {
         this.userId = userId;
         this.userDeviceId = userDeviceId;
@@ -44,6 +66,10 @@ public class UserClient {
         this.signedPreKeyId = signedPreKeyId;
     }
 
+    /**
+     * Initializes the client's cryptographic identity and generates key material
+     * including identity keys, prekeys, and signed prekeys.
+     */
     public void initializeUser() {
         logger.info("[{}] Initializing keys with PreKeyId={} and SignedPreKeyId={}", userId, preKeyId, signedPreKeyId);
         try {
@@ -60,6 +86,13 @@ public class UserClient {
         }
     }
 
+    /**
+     * Connects the client to the SecureChat server and registers its PreKeyBundle.
+     *
+     * @param host Server hostname or IP.
+     * @param port Server port.
+     * @throws IOException if the connection or registration fails.
+     */
     public void connectToServer(String host, int port) throws IOException {
         logger.info("[{}] Connecting to server at {}:{}", userId, host, port);
         try {
@@ -89,11 +122,25 @@ public class UserClient {
         }
     }
 
+    /**
+     * Initiates a secure session with a peer and sends the initial message.
+     *
+     * @param peerId        The recipient user's ID.
+     * @param peerDeviceId  The recipient's device ID.
+     * @param initialMessage The initial plaintext message to send.
+     */
     public void establishSession(String peerId, int peerDeviceId, String initialMessage) {
         logger.info("[{}] Establishing session with peer {}:{}", userId, peerId, peerDeviceId);
         sessionManager.establishSession(peerId, peerDeviceId, initialMessage);
     }
 
+    /**
+     * Sends an encrypted message to a peer.
+     *
+     * @param peerId        The recipient user's ID.
+     * @param peerDeviceId  The recipient's device ID.
+     * @param message       The plaintext message to send.
+     */
     public void sendMessage(String peerId, int peerDeviceId, String message) {
         try {
             packetManager.sendMessage(peerId, peerDeviceId, message, PacketType.MESSAGE);
@@ -103,6 +150,12 @@ public class UserClient {
         }
     }
 
+    /**
+     * Sends an acknowledgment packet (ACK) to a peer.
+     *
+     * @param peerId       The peer's user ID.
+     * @param peerDeviceId The peer's device ID.
+     */
     public void sendAck(String peerId, int peerDeviceId) {
         try {
             packetManager.sendAck(peerId, peerDeviceId);
@@ -112,6 +165,10 @@ public class UserClient {
         }
     }
 
+    /**
+     * Shuts down the client, closes the connection, stops background listeners,
+     * and terminates the executor service.
+     */
     public void stop() {
         logger.info("[{}] Shutting down client...", userId);
 

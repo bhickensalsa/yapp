@@ -15,6 +15,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * The {@code Server} class represents the main entry point for the SecureChat backend server.
+ * It accepts and manages client connections, routes messages, and handles cryptographic
+ * pre-key bundle registration and lookup.
+ * <p>
+ * It runs on a specified port and uses a thread pool to manage client handler threads concurrently.
+ * The server listens for various types of {@link Packet} including key exchange and encrypted messages.
+ * </p>
+ *
+ * @author bhickensalsa
+ * @version 0.1
+ */
 public class Server {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
@@ -25,14 +37,28 @@ public class Server {
 
     private volatile boolean isRunning = true;
 
+    /**
+     * Constructs a {@code Server} instance listening on the specified port.
+     *
+     * @param port The TCP port on which the server will accept client connections.
+     */
     public Server(int port) {
         this.port = port;
     }
 
+    /**
+     * Returns a prefix string used for logging purposes, specific to the server port.
+     *
+     * @return A formatted log prefix string.
+     */
     private String prefix() {
         return "[Server-" + port + "]";
     }
 
+    /**
+     * Starts the server, begins accepting client connections, and dispatches
+     * handlers for processing incoming packets.
+     */
     public void start() {
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
 
@@ -61,6 +87,12 @@ public class Server {
         }
     }
 
+    /**
+     * Handles communication with a single client, processing incoming {@link Packet}s
+     * and routing or responding as needed.
+     *
+     * @param conn The {@link PeerConnection} representing the client.
+     */
     private void handleClient(PeerConnection conn) {
         logger.info("{} Started client handler for {}", prefix(), conn);
         try {
@@ -102,6 +134,12 @@ public class Server {
         }
     }
 
+    /**
+     * Handles registration of a pre-key bundle sent by a client.
+     *
+     * @param packet The incoming {@link Packet} containing the bundle.
+     * @param conn   The {@link PeerConnection} of the sending client.
+     */
     private void handlePreKeyBundleRegistration(Packet packet, PeerConnection conn) {
         String userId = packet.getSenderId();
         int deviceId = packet.getSenderDeviceId();
@@ -123,6 +161,12 @@ public class Server {
         }
     }
 
+    /**
+     * Handles a request for a user's pre-key bundle from another client.
+     *
+     * @param packet The request {@link Packet}.
+     * @param conn   The connection from which the request originated.
+     */
     private void handlePreKeyBundleRequest(Packet packet, PeerConnection conn) {
         String requesterId = packet.getSenderId();
         String targetUserId = packet.getRecipientId();
@@ -151,6 +195,12 @@ public class Server {
         }
     }
 
+    /**
+     * Sends an error {@link Packet} back to the client with a specified message.
+     *
+     * @param conn    The connection to send the error to.
+     * @param message The error message as a string.
+     */
     private void sendError(PeerConnection conn, String message) {
         try {
             Packet errorPacket = new Packet();
@@ -168,6 +218,10 @@ public class Server {
         }
     }
 
+    /**
+     * Gracefully stops the server, shutting down the thread pool and ceasing
+     * to accept new client connections.
+     */
     public void stop() {
         isRunning = false;
         pool.shutdownNow();
