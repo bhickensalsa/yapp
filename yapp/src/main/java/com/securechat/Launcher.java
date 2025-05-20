@@ -8,76 +8,121 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Launcher {
-
     private static final Logger logger = LoggerFactory.getLogger(Launcher.class);
 
     private static final String SERVER_ID = "localhost";
     private static final int MESSAGE_PORT = 8888;
 
+    private static UserClient alice;
+    private static UserClient bob;
+    private static Server server;
+
     public static void main(String[] args) {
+        setupServer();
 
-        final String aliceId = "alice";
-        final int aliceDeviceId = 1;
-        final int alicePreKeyId = 1001;
-        final int aliceSignedPreKeyId = 1002;
+        waitMillis(2000); // Let server start
 
-        final String bobId = "bob";
-        final int bobDeviceId = 2;
-        final int bobPreKeyId = 2001;
-        final int bobSignedPreKeyId = 2002;
+        setupClients();
 
-        // Start the server
-        Server server = new Server(MESSAGE_PORT);
-        Thread serverThread = new Thread(server::start, "ServerThread");
-        serverThread.start();
-        logger.info("Server started on port {}", MESSAGE_PORT);
-
-        waitMillis(2000); // Give server time to start
-
-        // Create client stores (one per client)
-        SignalStore aliceStore = new SignalStore();
-        SignalStore bobStore = new SignalStore();
-
-        // Create clients with their stores and key IDs
-        UserClient alice = new UserClient(aliceId, aliceDeviceId, aliceStore, alicePreKeyId, aliceSignedPreKeyId);
-        UserClient bob = new UserClient(bobId, bobDeviceId, bobStore, bobPreKeyId, bobSignedPreKeyId);
-
-        // Initialize keys within clients
-        alice.initializeUser();
-        bob.initializeUser();
-
-        // Connect clients to the server
         try {
-            alice.connectToServer(SERVER_ID, MESSAGE_PORT);
-            bob.connectToServer(SERVER_ID, MESSAGE_PORT);
+            connectClients();
+            startChatSimulation();
         } catch (Exception e) {
-            logger.error("Failed to connect clients to server", e);
+            logger.error("Error during chat simulation", e);
+            stopClients();
+            stopServer();
             return;
         }
 
-        waitMillis(2500); // Wait for bundles to register
+        // Register shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Shutdown initiated...");
+            stopClients();
+            stopServer();
+        }));
 
-        // Establish sessions (one side initiates)
-        alice.establishSession(bobId, bobDeviceId);
-        //bob.establishSession(aliceId, aliceDeviceId); // Optional, Bob can wait for Alice's prekey message
+        // Keep the main thread alive
+        waitIndefinitely();
+    }
 
-        waitMillis(2500); // Wait for sessions to finalize
+    private static void setupServer() {
+        server = new Server(MESSAGE_PORT);
+        Thread serverThread = new Thread(server::start, "ServerThread");
+        serverThread.start();
+        logger.info("Server started on port {}", MESSAGE_PORT);
+    }
 
-        // Exchange messages, specifying peer device IDs explicitly
-        alice.sendMessage(bobId, bobDeviceId, "Hi Bob!");
-        bob.sendMessage(aliceId, aliceDeviceId, "Hi Alice!");
+    private static void setupClients() {
+        SignalStore aliceStore = new SignalStore();
+        SignalStore bobStore = new SignalStore();
 
-        waitMillis(1000);
+        alice = new UserClient("alice", 1, aliceStore, 1001, 1002);
+        bob = new UserClient("bob", 2, bobStore, 2001, 2002);
 
-        alice.sendMessage(bobId, bobDeviceId, "Are you available for a call?");
-        bob.sendMessage(aliceId, aliceDeviceId, "Sure, let's do it!");
+        alice.initializeUser();
+        bob.initializeUser();
+    }
 
-        // Keep main thread alive so clients can keep running
-        try {
-            Thread.currentThread().join();
-        } catch (InterruptedException e) {
-            logger.error("Main thread interrupted", e);
-            Thread.currentThread().interrupt();
+    private static void connectClients() throws Exception {
+        alice.connectToServer(SERVER_ID, MESSAGE_PORT);
+        bob.connectToServer(SERVER_ID, MESSAGE_PORT);
+    }
+
+    private static void startChatSimulation() {
+        bob.establishSession("alice", 1, "Hey Alice, here's my prekey message so you can start chatting securely!");
+        waitMillis(3000); // Allow session to establish
+
+        alice.sendMessage("bob", 2, "1 Hey Bob! Just got your prekey message. Looks like everything's working!");
+        waitMillis(500);
+
+        bob.sendMessage("alice", 1, "2 Awesome! I was a bit worried about the setup, but glad it's smooth now.");
+        waitMillis(500);
+
+        alice.sendMessage("bob", 2, "3 Yeah, it's been a pretty smooth experience. I like how quickly sessions establish.");
+        waitMillis(500);
+
+        bob.sendMessage("alice", 1, "4 For sure. We should probably do a more extended test though. Maybe simulate a real chat?");
+        waitMillis(500);
+
+        alice.sendMessage("bob", 2, "5 Agreed. So imagine we're planning for a weekend hike. What gear do you think we'll need?");
+        waitMillis(500);
+
+        bob.sendMessage("alice", 1, "6 Hmm, definitely hiking boots, a hydration pack, probably a jacket depending on the weather.");
+        waitMillis(500);
+
+        alice.sendMessage("bob", 2, "7 Good call. Also thinking of bringing a GPS tracker just in case. Signal might get weak in the mountains.");
+        waitMillis(500);
+
+        bob.sendMessage("alice", 1, "8 Smart. I'll also bring a small first aid kit. Better safe than sorry.");
+        waitMillis(500);
+
+        alice.sendMessage("bob", 2, "9 Nice. Okay, this conversation has now reached a healthy message count for load testing 😄");
+        waitMillis(500);
+
+        bob.sendMessage("alice", 1, "10 Haha, yeah! This should be a good stress test for both encryption and delivery reliability.");
+        waitMillis(500);
+
+        alice.sendMessage("bob", 2, "11 Absolutely. We'll check the logs after to verify everything went smoothly. Thanks for helping me test!");
+        waitMillis(500);
+
+        bob.sendMessage("alice", 1, "12 Anytime! Looking forward to seeing how well our secure chat holds up under more complex exchanges.");
+    }
+
+    private static void stopClients() {
+        if (alice != null) {
+            alice.stop();
+            logger.info("Alice client stopped.");
+        }
+        if (bob != null) {
+            bob.stop();
+            logger.info("Bob client stopped.");
+        }
+    }
+
+    private static void stopServer() {
+        if (server != null) {
+            server.stop();
+            logger.info("Server stopped.");
         }
     }
 
@@ -86,6 +131,17 @@ public class Launcher {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
             logger.error("Sleep interrupted", e);
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private static void waitIndefinitely() {
+        try {
+            synchronized (Launcher.class) {
+                Launcher.class.wait();
+            }
+        } catch (InterruptedException e) {
+            logger.warn("Main thread interrupted, exiting...");
             Thread.currentThread().interrupt();
         }
     }

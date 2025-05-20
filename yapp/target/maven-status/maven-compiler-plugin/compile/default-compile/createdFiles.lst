@@ -1,9 +1,11 @@
 com\securechat\gui\ChatWindow.class
+com\securechat\network\PacketManager.class
 com\securechat\network\PeerConnection.class
 com\securechat\crypto\libsignal\PreKeyBundleBuilder.class
 com\securechat\Launcher.class
 com\securechat\server\Server.class
 com\securechat\crypto\libsignal\SignalProtocolManager.class
+com\securechat\crypto\libsignal\SessionManager.class
 com\securechat\model\KeyBundle.class
 com\securechat\protocol\PacketType.class
 com\securechat\store\SignalStore.class
@@ -11,8 +13,8 @@ com\securechat\crypto\libsignal\PreKeyBundleDTO.class
 com\securechat\model\UserProfile.class
 com\securechat\network\MessageRouter.class
 com\securechat\protocol\Packet.class
-com\securechat\client\UserClient$1.class
 com\securechat\server\Server$1.class
 com\securechat\config\ConfigLoader.class
+com\securechat\network\PacketManager$1.class
 com\securechat\client\UserClient.class
 com\securechat\server\ClientManager.class

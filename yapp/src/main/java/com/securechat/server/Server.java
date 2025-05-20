@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,9 +21,7 @@ public class Server {
     private final int port;
     private final ExecutorService pool = Executors.newCachedThreadPool();
     private final MessageRouter messageRouter = new MessageRouter();
-
-    // Map of userId -> deviceId -> PreKeyBundleDTO
-    private final Map<String, Map<Integer, PreKeyBundleDTO>> peerBundles = new ConcurrentHashMap<>();
+    private final ClientManager clientManager = new ClientManager();
 
     private volatile boolean isRunning = true;
 
@@ -117,10 +113,8 @@ public class Server {
             return;
         }
 
-        peerBundles.computeIfAbsent(userId, k -> new ConcurrentHashMap<>())
-                   .put(deviceId, bundle);
-
         try {
+            clientManager.register(userId, deviceId, bundle);
             messageRouter.registerPeer(userId, deviceId, conn);
             logger.info("{} Registered PreKeyBundle for user '{}' device '{}'", prefix(), userId, deviceId);
         } catch (Exception e) {
@@ -140,7 +134,7 @@ public class Server {
             return;
         }
 
-        PreKeyBundleDTO bundle = getPreKeyBundle(targetUserId, targetDeviceId);
+        PreKeyBundleDTO bundle = clientManager.getPreKeyBundle(targetUserId, targetDeviceId);
 
         if (bundle != null) {
             try {
@@ -155,14 +149,6 @@ public class Server {
             logger.warn("{} No PreKeyBundle found for user '{}' device '{}'", prefix(), targetUserId, targetDeviceId);
             sendError(conn, "PreKeyBundle not found for recipient");
         }
-    }
-
-    private PreKeyBundleDTO getPreKeyBundle(String userId, int deviceId) {
-        Map<Integer, PreKeyBundleDTO> deviceMap = peerBundles.get(userId);
-        if (deviceMap != null) {
-            return deviceMap.get(deviceId);
-        }
-        return null;
     }
 
     private void sendError(PeerConnection conn, String message) {

@@ -1,6 +1,7 @@
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\network\PeerConnection.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\crypto\libsignal\PreKeyBundleBuilder.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\crypto\libsignal\PreKeyBundleDTO.java
+C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\crypto\libsignal\SessionManager.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\gui\ChatWindow.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\crypto\libsignal\SignalProtocolManager.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\config\ConfigLoader.java
@@ -10,6 +11,7 @@ C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\protocol\Packet.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\Launcher.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\model\UserProfile.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\model\KeyBundle.java
+C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\network\PacketManager.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\server\ClientManager.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\store\SignalStore.java
 C:\Users\pajon\yapp\yapp\src\main\java\com\securechat\client\UserClient.java

@@ -1,0 +1,407 @@
+2025-05-20 22:23:04.095 INFO  [main] com.securechat.Launcher - Server started on port 8888
+2025-05-20 22:23:04.099 INFO  [ServerThread] com.securechat.server.Server - [Server-8888] SecureChat server started and listening on port 8888
+2025-05-20 22:23:06.113 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] SignalStore instance created, awaiting keys initialization
+2025-05-20 22:23:06.114 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] SignalStore instance created, awaiting keys initialization
+2025-05-20 22:23:06.118 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Created with provided SignalProtocolStore
+2025-05-20 22:23:06.119 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Created with provided SignalProtocolStore
+2025-05-20 22:23:06.120 INFO  [main] com.securechat.client.UserClient - [alice] Initializing keys with PreKeyId=1001 and SignedPreKeyId=1002
+2025-05-20 22:23:06.181 INFO  [main] com.securechat.store.SignalStore - [SignalStore] Initialized IdentityKeyPair and registration ID 3154
+2025-05-20 22:23:06.204 INFO  [main] com.securechat.store.SignalStore - [SignalStore] Stored PreKey with ID: 1001
+2025-05-20 22:23:06.208 INFO  [main] com.securechat.store.SignalStore - [SignalStore] Stored SignedPreKey with ID: 1002
+2025-05-20 22:23:06.209 INFO  [main] com.securechat.client.UserClient - [alice] Keys initialized successfully
+2025-05-20 22:23:06.209 INFO  [main] com.securechat.client.UserClient - [bob] Initializing keys with PreKeyId=2001 and SignedPreKeyId=2002
+2025-05-20 22:23:06.210 INFO  [main] com.securechat.store.SignalStore - [SignalStore] Initialized IdentityKeyPair and registration ID 4003
+2025-05-20 22:23:06.211 INFO  [main] com.securechat.store.SignalStore - [SignalStore] Stored PreKey with ID: 2001
+2025-05-20 22:23:06.214 INFO  [main] com.securechat.store.SignalStore - [SignalStore] Stored SignedPreKey with ID: 2002
+2025-05-20 22:23:06.215 INFO  [main] com.securechat.client.UserClient - [bob] Keys initialized successfully
+2025-05-20 22:23:06.215 INFO  [main] com.securechat.client.UserClient - [alice] Connecting to server at localhost:8888
+2025-05-20 22:23:06.226 INFO  [ServerThread] com.securechat.server.Server - [Server-8888] Accepted new client connection from /127.0.0.1:59917
+2025-05-20 22:23:06.228 INFO  [pool-2-thread-1] com.securechat.server.Server - [Server-8888] Started client handler for com.securechat.network.PeerConnection@3645a788
+2025-05-20 22:23:06.229 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Retrieving local registration ID: 3154
+2025-05-20 22:23:06.230 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - [PreKeyBundleBuilder] Building PreKeyBundle with registrationId=3154, deviceId=1, preKeyId=1001, signedPreKeyId=1002
+2025-05-20 22:23:06.230 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded PreKey with ID: 1001
+2025-05-20 22:23:06.231 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - [PreKeyBundleBuilder] Loaded PreKeyRecord for ID: 1001
+2025-05-20 22:23:06.231 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded SignedPreKey with ID: 1002
+2025-05-20 22:23:06.231 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - [PreKeyBundleBuilder] Loaded SignedPreKeyRecord for ID: 1002
+2025-05-20 22:23:06.231 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Retrieving IdentityKeyPair
+2025-05-20 22:23:06.232 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - [PreKeyBundleBuilder] PreKeyBundle successfully built for deviceId 1
+2025-05-20 22:23:06.254 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - [PreKeyBundleDTO] Converting PreKeyBundle to DTO for registrationId=3154, deviceId=1
+2025-05-20 22:23:06.254 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - [PreKeyBundleDTO] PreKeyBundleDTO created successfully
+2025-05-20 22:23:06.259 INFO  [main] com.securechat.client.UserClient - [alice] Registered PreKeyBundle with server
+2025-05-20 22:23:06.260 INFO  [main] c.securechat.network.PacketManager - [alice] PacketManager started listening
+2025-05-20 22:23:06.260 INFO  [pool-2-thread-1] com.securechat.server.ClientManager - [ClientManager] Registered PreKeyBundle for user 'alice' device '1'
+2025-05-20 22:23:06.260 INFO  [main] com.securechat.client.UserClient - [bob] Connecting to server at localhost:8888
+2025-05-20 22:23:06.261 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Retrieving local registration ID: 4003
+2025-05-20 22:23:06.261 INFO  [ServerThread] com.securechat.server.Server - [Server-8888] Accepted new client connection from /127.0.0.1:59918
+2025-05-20 22:23:06.261 INFO  [pool-2-thread-1] c.securechat.network.MessageRouter - Registered peer for user 'alice' on device 1
+2025-05-20 22:23:06.261 DEBUG [main] c.s.c.libsignal.PreKeyBundleBuilder - [PreKeyBundleBuilder] Building PreKeyBundle with registrationId=4003, deviceId=2, preKeyId=2001, signedPreKeyId=2002
+2025-05-20 22:23:06.262 INFO  [pool-2-thread-1] com.securechat.server.Server - [Server-8888] Registered PreKeyBundle for user 'alice' device '1'
+2025-05-20 22:23:06.262 INFO  [pool-2-thread-2] com.securechat.server.Server - [Server-8888] Started client handler for com.securechat.network.PeerConnection@4bb6f9b3
+2025-05-20 22:23:06.262 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded PreKey with ID: 2001
+2025-05-20 22:23:06.262 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - [PreKeyBundleBuilder] Loaded PreKeyRecord for ID: 2001
+2025-05-20 22:23:06.263 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded SignedPreKey with ID: 2002
+2025-05-20 22:23:06.263 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - [PreKeyBundleBuilder] Loaded SignedPreKeyRecord for ID: 2002
+2025-05-20 22:23:06.263 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Retrieving IdentityKeyPair
+2025-05-20 22:23:06.264 INFO  [main] c.s.c.libsignal.PreKeyBundleBuilder - [PreKeyBundleBuilder] PreKeyBundle successfully built for deviceId 2
+2025-05-20 22:23:06.264 DEBUG [main] c.s.crypto.libsignal.PreKeyBundleDTO - [PreKeyBundleDTO] Converting PreKeyBundle to DTO for registrationId=4003, deviceId=2
+2025-05-20 22:23:06.264 INFO  [main] c.s.crypto.libsignal.PreKeyBundleDTO - [PreKeyBundleDTO] PreKeyBundleDTO created successfully
+2025-05-20 22:23:06.265 INFO  [main] com.securechat.client.UserClient - [bob] Registered PreKeyBundle with server
+2025-05-20 22:23:06.265 INFO  [main] c.securechat.network.PacketManager - [bob] PacketManager started listening
+2025-05-20 22:23:06.266 INFO  [pool-2-thread-2] com.securechat.server.ClientManager - [ClientManager] Registered PreKeyBundle for user 'bob' device '2'
+2025-05-20 22:23:06.266 INFO  [main] com.securechat.client.UserClient - [bob] Establishing session with peer alice:1
+2025-05-20 22:23:06.266 INFO  [pool-2-thread-2] c.securechat.network.MessageRouter - Registered peer for user 'bob' on device 2
+2025-05-20 22:23:06.266 INFO  [pool-2-thread-2] com.securechat.server.Server - [Server-8888] Registered PreKeyBundle for user 'bob' device '2'
+2025-05-20 22:23:06.267 INFO  [main] c.s.crypto.libsignal.SessionManager - [bob] Initiating session with alice:1
+2025-05-20 22:23:06.268 INFO  [main] c.s.crypto.libsignal.SessionManager - [bob] Sent PREKEY_BUNDLE request to alice:1
+2025-05-20 22:23:06.268 DEBUG [pool-2-thread-2] com.securechat.server.ClientManager - [ClientManager] Retrieved PreKeyBundle for user 'alice' device '1'
+2025-05-20 22:23:06.269 INFO  [pool-2-thread-2] com.securechat.server.Server - [Server-8888] Sent PREKEY_BUNDLE to requester 'bob' for user 'alice' device '1'
+2025-05-20 22:23:06.270 DEBUG [pool-6-thread-1] c.s.crypto.libsignal.PreKeyBundleDTO - [PreKeyBundleDTO] Converting DTO to PreKeyBundle for registrationId=3154, deviceId=1
+2025-05-20 22:23:06.273 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:06.281 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:06.283 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Retrieving IdentityKeyPair
+2025-05-20 22:23:06.304 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Retrieving local registration ID: 4003
+2025-05-20 22:23:06.304 INFO  [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Saved new identity for alice device 1
+2025-05-20 22:23:06.305 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:06.305 INFO  [pool-6-thread-1] c.s.crypto.libsignal.SessionManager - [bob] Session successfully established with alice:1
+2025-05-20 22:23:06.305 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:06.317 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:06.317 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Identity for alice device 1 unchanged
+2025-05-20 22:23:06.317 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:06.318 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:06.318 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:06.318 INFO  [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Encrypted PreKey message for peer alice device 1
+2025-05-20 22:23:06.319 INFO  [pool-6-thread-1] c.s.crypto.libsignal.SessionManager - [bob] Sent PREKEY_MESSAGE to alice:1
+2025-05-20 22:23:06.319 INFO  [pool-6-thread-1] c.securechat.network.PacketManager - [bob] Received PREKEY_BUNDLE from alice:1
+2025-05-20 22:23:06.319 DEBUG [pool-2-thread-2] c.securechat.network.MessageRouter - Routed message from 'bob' to 'alice@1'
+2025-05-20 22:23:06.319 INFO  [pool-2-thread-2] com.securechat.server.Server - [Server-8888] Routed PREKEY_MESSAGE packet from user 'bob' device '2'
+2025-05-20 22:23:06.320 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:06.320 DEBUG [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:06.323 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:06.323 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for bob device 2: true
+2025-05-20 22:23:06.323 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded SignedPreKey with ID: 1002
+2025-05-20 22:23:06.324 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Retrieving IdentityKeyPair
+2025-05-20 22:23:06.324 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded PreKey with ID: 1001
+2025-05-20 22:23:06.326 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Retrieving local registration ID: 3154
+2025-05-20 22:23:06.326 INFO  [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Saved new identity for bob device 2
+2025-05-20 22:23:06.327 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:06.328 INFO  [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Removed PreKey with ID: 1001
+2025-05-20 22:23:06.328 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:06.328 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:06.328 INFO  [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Decrypted PreKey message from bob device 2
+2025-05-20 22:23:06.329 INFO  [pool-5-thread-1] c.securechat.network.PacketManager - [alice] Received PREKEY_MESSAGE from bob:2: Hey Alice, here's my prekey message so you can start chatting securely!
+2025-05-20 22:23:06.329 INFO  [pool-5-thread-1] c.securechat.network.PacketManager - [alice] Sent ACK to bob:2
+2025-05-20 22:23:06.329 DEBUG [pool-2-thread-1] c.securechat.network.MessageRouter - Routed message from 'alice' to 'bob@2'
+2025-05-20 22:23:06.329 INFO  [pool-6-thread-1] c.securechat.network.PacketManager - [bob] Received ACK from alice:1
+2025-05-20 22:23:06.329 INFO  [pool-2-thread-1] com.securechat.server.Server - [Server-8888] Routed ACK packet from user 'alice' device '1'
+2025-05-20 22:23:09.280 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:09.281 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:09.282 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:09.283 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for bob device 2: true
+2025-05-20 22:23:09.283 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Identity for bob device 2 unchanged
+2025-05-20 22:23:09.284 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:09.284 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:09.284 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:09.284 INFO  [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Encrypted message for peer bob device 2
+2025-05-20 22:23:09.285 INFO  [main] c.securechat.network.PacketManager - [alice] Sent MESSAGE to bob
+2025-05-20 22:23:09.285 INFO  [main] com.securechat.client.UserClient - [alice] Sent message to bob:2
+2025-05-20 22:23:09.285 DEBUG [pool-2-thread-1] c.securechat.network.MessageRouter - Routed message from 'alice' to 'bob@2'
+2025-05-20 22:23:09.285 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:09.286 INFO  [pool-2-thread-1] com.securechat.server.Server - [Server-8888] Routed MESSAGE packet from user 'alice' device '1'
+2025-05-20 22:23:09.286 DEBUG [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:09.287 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:09.287 DEBUG [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:09.287 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Checking if session exists for alice device 1: true
+2025-05-20 22:23:09.288 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:09.290 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:09.290 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Identity for alice device 1 unchanged
+2025-05-20 22:23:09.291 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:09.291 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:09.292 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:09.292 INFO  [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Decrypted message from alice device 1
+2025-05-20 22:23:09.292 INFO  [pool-6-thread-1] c.securechat.network.PacketManager - [bob] Received MESSAGE from alice:1: 1 Hey Bob! Just got your prekey message. Looks like everything's working!
+2025-05-20 22:23:09.789 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:09.789 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:09.790 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:09.790 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:09.791 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Identity for alice device 1 unchanged
+2025-05-20 22:23:09.791 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:09.791 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:09.792 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:09.793 INFO  [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Encrypted message for peer alice device 1
+2025-05-20 22:23:09.793 INFO  [main] c.securechat.network.PacketManager - [bob] Sent MESSAGE to alice
+2025-05-20 22:23:09.794 INFO  [main] com.securechat.client.UserClient - [bob] Sent message to alice:1
+2025-05-20 22:23:09.794 DEBUG [pool-2-thread-2] c.securechat.network.MessageRouter - Routed message from 'bob' to 'alice@1'
+2025-05-20 22:23:09.794 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:09.794 INFO  [pool-2-thread-2] com.securechat.server.Server - [Server-8888] Routed MESSAGE packet from user 'bob' device '2'
+2025-05-20 22:23:09.795 DEBUG [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:09.795 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:09.795 DEBUG [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:09.796 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Checking if session exists for bob device 2: true
+2025-05-20 22:23:09.796 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:09.797 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for bob device 2: true
+2025-05-20 22:23:09.798 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Identity for bob device 2 unchanged
+2025-05-20 22:23:09.798 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:09.798 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:09.799 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:09.799 INFO  [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Decrypted message from bob device 2
+2025-05-20 22:23:09.799 INFO  [pool-5-thread-1] c.securechat.network.PacketManager - [alice] Received MESSAGE from bob:2: 2 Awesome! I was a bit worried about the setup, but glad it's smooth now.
+2025-05-20 22:23:10.295 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:10.295 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:10.296 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:10.296 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for bob device 2: true
+2025-05-20 22:23:10.297 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Identity for bob device 2 unchanged
+2025-05-20 22:23:10.297 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:10.297 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:10.297 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:10.298 INFO  [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Encrypted message for peer bob device 2
+2025-05-20 22:23:10.298 INFO  [main] c.securechat.network.PacketManager - [alice] Sent MESSAGE to bob
+2025-05-20 22:23:10.298 DEBUG [pool-2-thread-1] c.securechat.network.MessageRouter - Routed message from 'alice' to 'bob@2'
+2025-05-20 22:23:10.298 INFO  [main] com.securechat.client.UserClient - [alice] Sent message to bob:2
+2025-05-20 22:23:10.298 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:10.298 INFO  [pool-2-thread-1] com.securechat.server.Server - [Server-8888] Routed MESSAGE packet from user 'alice' device '1'
+2025-05-20 22:23:10.299 DEBUG [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:10.299 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:10.299 DEBUG [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:10.300 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Checking if session exists for alice device 1: true
+2025-05-20 22:23:10.300 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:10.302 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:10.303 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Identity for alice device 1 unchanged
+2025-05-20 22:23:10.304 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:10.305 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:10.305 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:10.306 INFO  [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Decrypted message from alice device 1
+2025-05-20 22:23:10.306 INFO  [pool-6-thread-1] c.securechat.network.PacketManager - [bob] Received MESSAGE from alice:1: 3 Yeah, it's been a pretty smooth experience. I like how quickly sessions establish.
+2025-05-20 22:23:10.803 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:10.803 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:10.804 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:10.804 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:10.805 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Identity for alice device 1 unchanged
+2025-05-20 22:23:10.805 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:10.805 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:10.805 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:10.805 INFO  [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Encrypted message for peer alice device 1
+2025-05-20 22:23:10.806 INFO  [main] c.securechat.network.PacketManager - [bob] Sent MESSAGE to alice
+2025-05-20 22:23:10.806 INFO  [main] com.securechat.client.UserClient - [bob] Sent message to alice:1
+2025-05-20 22:23:10.806 DEBUG [pool-2-thread-2] c.securechat.network.MessageRouter - Routed message from 'bob' to 'alice@1'
+2025-05-20 22:23:10.806 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:10.807 INFO  [pool-2-thread-2] com.securechat.server.Server - [Server-8888] Routed MESSAGE packet from user 'bob' device '2'
+2025-05-20 22:23:10.807 DEBUG [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:10.807 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:10.807 DEBUG [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:10.808 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Checking if session exists for bob device 2: true
+2025-05-20 22:23:10.808 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:10.812 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for bob device 2: true
+2025-05-20 22:23:10.813 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Identity for bob device 2 unchanged
+2025-05-20 22:23:10.813 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:10.815 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:10.815 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:10.815 INFO  [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Decrypted message from bob device 2
+2025-05-20 22:23:10.815 INFO  [pool-5-thread-1] c.securechat.network.PacketManager - [alice] Received MESSAGE from bob:2: 4 For sure. We should probably do a more extended test though. Maybe simulate a real chat?
+2025-05-20 22:23:11.311 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:11.311 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:11.311 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:11.312 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for bob device 2: true
+2025-05-20 22:23:11.313 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Identity for bob device 2 unchanged
+2025-05-20 22:23:11.313 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:11.313 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:11.314 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:11.314 INFO  [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Encrypted message for peer bob device 2
+2025-05-20 22:23:11.315 INFO  [main] c.securechat.network.PacketManager - [alice] Sent MESSAGE to bob
+2025-05-20 22:23:11.315 DEBUG [pool-2-thread-1] c.securechat.network.MessageRouter - Routed message from 'alice' to 'bob@2'
+2025-05-20 22:23:11.315 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:11.315 INFO  [main] com.securechat.client.UserClient - [alice] Sent message to bob:2
+2025-05-20 22:23:11.315 INFO  [pool-2-thread-1] com.securechat.server.Server - [Server-8888] Routed MESSAGE packet from user 'alice' device '1'
+2025-05-20 22:23:11.315 DEBUG [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:11.316 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:11.316 DEBUG [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:11.317 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Checking if session exists for alice device 1: true
+2025-05-20 22:23:11.317 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:11.319 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:11.320 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Identity for alice device 1 unchanged
+2025-05-20 22:23:11.321 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:11.321 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:11.322 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:11.322 INFO  [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Decrypted message from alice device 1
+2025-05-20 22:23:11.322 INFO  [pool-6-thread-1] c.securechat.network.PacketManager - [bob] Received MESSAGE from alice:1: 5 Agreed. So imagine we're planning for a weekend hike. What gear do you think we'll need?
+2025-05-20 22:23:11.818 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:11.818 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:11.819 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:11.821 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:11.821 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Identity for alice device 1 unchanged
+2025-05-20 22:23:11.821 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:11.821 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:11.822 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:11.822 INFO  [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Encrypted message for peer alice device 1
+2025-05-20 22:23:11.823 INFO  [main] c.securechat.network.PacketManager - [bob] Sent MESSAGE to alice
+2025-05-20 22:23:11.823 INFO  [main] com.securechat.client.UserClient - [bob] Sent message to alice:1
+2025-05-20 22:23:11.823 DEBUG [pool-2-thread-2] c.securechat.network.MessageRouter - Routed message from 'bob' to 'alice@1'
+2025-05-20 22:23:11.823 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:11.824 INFO  [pool-2-thread-2] com.securechat.server.Server - [Server-8888] Routed MESSAGE packet from user 'bob' device '2'
+2025-05-20 22:23:11.824 DEBUG [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:11.825 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:11.825 DEBUG [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:11.825 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Checking if session exists for bob device 2: true
+2025-05-20 22:23:11.826 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:11.827 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for bob device 2: true
+2025-05-20 22:23:11.828 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Identity for bob device 2 unchanged
+2025-05-20 22:23:11.828 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:11.828 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:11.828 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:11.829 INFO  [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Decrypted message from bob device 2
+2025-05-20 22:23:11.829 INFO  [pool-5-thread-1] c.securechat.network.PacketManager - [alice] Received MESSAGE from bob:2: 6 Hmm, definitely hiking boots, a hydration pack, probably a jacket depending on the weather.
+2025-05-20 22:23:12.327 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:12.328 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:12.328 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:12.329 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for bob device 2: true
+2025-05-20 22:23:12.330 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Identity for bob device 2 unchanged
+2025-05-20 22:23:12.330 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:12.331 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:12.331 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:12.331 INFO  [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Encrypted message for peer bob device 2
+2025-05-20 22:23:12.332 INFO  [main] c.securechat.network.PacketManager - [alice] Sent MESSAGE to bob
+2025-05-20 22:23:12.333 DEBUG [pool-2-thread-1] c.securechat.network.MessageRouter - Routed message from 'alice' to 'bob@2'
+2025-05-20 22:23:12.333 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:12.334 INFO  [pool-2-thread-1] com.securechat.server.Server - [Server-8888] Routed MESSAGE packet from user 'alice' device '1'
+2025-05-20 22:23:12.334 INFO  [main] com.securechat.client.UserClient - [alice] Sent message to bob:2
+2025-05-20 22:23:12.334 DEBUG [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:12.335 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:12.336 DEBUG [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:12.336 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Checking if session exists for alice device 1: true
+2025-05-20 22:23:12.336 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:12.338 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:12.341 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Identity for alice device 1 unchanged
+2025-05-20 22:23:12.341 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:12.342 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:12.342 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:12.342 INFO  [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Decrypted message from alice device 1
+2025-05-20 22:23:12.344 INFO  [pool-6-thread-1] c.securechat.network.PacketManager - [bob] Received MESSAGE from alice:1: 7 Good call. Also thinking of bringing a GPS tracker just in case. Signal might get weak in the mountains.
+2025-05-20 22:23:12.850 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:12.851 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:12.851 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:12.851 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:12.852 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Identity for alice device 1 unchanged
+2025-05-20 22:23:12.852 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:12.852 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:12.853 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:12.853 INFO  [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Encrypted message for peer alice device 1
+2025-05-20 22:23:12.854 INFO  [main] c.securechat.network.PacketManager - [bob] Sent MESSAGE to alice
+2025-05-20 22:23:12.854 DEBUG [pool-2-thread-2] c.securechat.network.MessageRouter - Routed message from 'bob' to 'alice@1'
+2025-05-20 22:23:12.854 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:12.854 INFO  [main] com.securechat.client.UserClient - [bob] Sent message to alice:1
+2025-05-20 22:23:12.854 INFO  [pool-2-thread-2] com.securechat.server.Server - [Server-8888] Routed MESSAGE packet from user 'bob' device '2'
+2025-05-20 22:23:12.854 DEBUG [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:12.855 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:12.855 DEBUG [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:12.855 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Checking if session exists for bob device 2: true
+2025-05-20 22:23:12.856 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:12.857 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for bob device 2: true
+2025-05-20 22:23:12.857 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Identity for bob device 2 unchanged
+2025-05-20 22:23:12.857 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:12.858 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:12.858 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:12.858 INFO  [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Decrypted message from bob device 2
+2025-05-20 22:23:12.858 INFO  [pool-5-thread-1] c.securechat.network.PacketManager - [alice] Received MESSAGE from bob:2: 8 Smart. I'll also bring a small first aid kit. Better safe than sorry.
+2025-05-20 22:23:13.358 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:13.359 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:13.360 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:13.360 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for bob device 2: true
+2025-05-20 22:23:13.361 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Identity for bob device 2 unchanged
+2025-05-20 22:23:13.361 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:13.361 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:13.361 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:13.361 INFO  [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Encrypted message for peer bob device 2
+2025-05-20 22:23:13.362 INFO  [main] c.securechat.network.PacketManager - [alice] Sent MESSAGE to bob
+2025-05-20 22:23:13.362 DEBUG [pool-2-thread-1] c.securechat.network.MessageRouter - Routed message from 'alice' to 'bob@2'
+2025-05-20 22:23:13.362 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:13.363 INFO  [main] com.securechat.client.UserClient - [alice] Sent message to bob:2
+2025-05-20 22:23:13.363 INFO  [pool-2-thread-1] com.securechat.server.Server - [Server-8888] Routed MESSAGE packet from user 'alice' device '1'
+2025-05-20 22:23:13.363 DEBUG [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:13.364 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:13.364 DEBUG [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:13.364 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Checking if session exists for alice device 1: true
+2025-05-20 22:23:13.365 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:13.367 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:13.368 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Identity for alice device 1 unchanged
+2025-05-20 22:23:13.368 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:13.368 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:13.368 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:13.369 INFO  [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Decrypted message from alice device 1
+2025-05-20 22:23:13.369 INFO  [pool-6-thread-1] c.securechat.network.PacketManager - [bob] Received MESSAGE from alice:1: 9 Nice. Okay, this conversation has now reached a healthy message count for load testing 😄
+2025-05-20 22:23:13.865 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:13.866 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:13.866 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:13.866 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:13.866 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Identity for alice device 1 unchanged
+2025-05-20 22:23:13.867 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:13.867 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:13.867 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:13.867 INFO  [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Encrypted message for peer alice device 1
+2025-05-20 22:23:13.867 INFO  [main] c.securechat.network.PacketManager - [bob] Sent MESSAGE to alice
+2025-05-20 22:23:13.867 DEBUG [pool-2-thread-2] c.securechat.network.MessageRouter - Routed message from 'bob' to 'alice@1'
+2025-05-20 22:23:13.868 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:13.868 INFO  [main] com.securechat.client.UserClient - [bob] Sent message to alice:1
+2025-05-20 22:23:13.868 INFO  [pool-2-thread-2] com.securechat.server.Server - [Server-8888] Routed MESSAGE packet from user 'bob' device '2'
+2025-05-20 22:23:13.868 DEBUG [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:13.868 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:13.868 DEBUG [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:13.869 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Checking if session exists for bob device 2: true
+2025-05-20 22:23:13.869 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:13.870 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for bob device 2: true
+2025-05-20 22:23:13.870 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Identity for bob device 2 unchanged
+2025-05-20 22:23:13.870 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:13.870 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:13.871 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:13.871 INFO  [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Decrypted message from bob device 2
+2025-05-20 22:23:13.871 INFO  [pool-5-thread-1] c.securechat.network.PacketManager - [alice] Received MESSAGE from bob:2: 10 Haha, yeah! This should be a good stress test for both encryption and delivery reliability.
+2025-05-20 22:23:14.374 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:14.375 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:14.375 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:14.375 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for bob device 2: true
+2025-05-20 22:23:14.376 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Identity for bob device 2 unchanged
+2025-05-20 22:23:14.376 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:14.376 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:14.377 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:14.377 INFO  [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Encrypted message for peer bob device 2
+2025-05-20 22:23:14.377 INFO  [main] c.securechat.network.PacketManager - [alice] Sent MESSAGE to bob
+2025-05-20 22:23:14.377 DEBUG [pool-2-thread-1] c.securechat.network.MessageRouter - Routed message from 'alice' to 'bob@2'
+2025-05-20 22:23:14.378 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:14.378 INFO  [main] com.securechat.client.UserClient - [alice] Sent message to bob:2
+2025-05-20 22:23:14.378 INFO  [pool-2-thread-1] com.securechat.server.Server - [Server-8888] Routed MESSAGE packet from user 'alice' device '1'
+2025-05-20 22:23:14.378 DEBUG [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:14.378 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:14.379 DEBUG [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:14.379 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Checking if session exists for alice device 1: true
+2025-05-20 22:23:14.379 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:14.380 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:14.380 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Identity for alice device 1 unchanged
+2025-05-20 22:23:14.381 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:14.381 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:14.382 DEBUG [pool-6-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:14.382 INFO  [pool-6-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Decrypted message from alice device 1
+2025-05-20 22:23:14.382 INFO  [pool-6-thread-1] c.securechat.network.PacketManager - [bob] Received MESSAGE from alice:1: 11 Absolutely. We'll check the logs after to verify everything went smoothly. Thanks for helping me test!
+2025-05-20 22:23:14.880 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:14.881 DEBUG [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer alice device 1: true
+2025-05-20 22:23:14.881 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:14.882 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for alice device 1: true
+2025-05-20 22:23:14.883 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Identity for alice device 1 unchanged
+2025-05-20 22:23:14.884 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:14.884 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Loaded session for alice device 1
+2025-05-20 22:23:14.884 DEBUG [main] com.securechat.store.SignalStore - [SignalStore] Stored session for alice device 1
+2025-05-20 22:23:14.884 INFO  [main] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Encrypted message for peer alice device 1
+2025-05-20 22:23:14.885 INFO  [main] c.securechat.network.PacketManager - [bob] Sent MESSAGE to alice
+2025-05-20 22:23:14.885 DEBUG [pool-2-thread-2] c.securechat.network.MessageRouter - Routed message from 'bob' to 'alice@1'
+2025-05-20 22:23:14.885 INFO  [main] com.securechat.client.UserClient - [bob] Sent message to alice:1
+2025-05-20 22:23:14.885 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:14.885 INFO  [pool-2-thread-2] com.securechat.server.Server - [Server-8888] Routed MESSAGE packet from user 'bob' device '2'
+2025-05-20 22:23:14.886 DEBUG [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:14.887 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:14.887 DEBUG [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Session check for peer bob device 2: true
+2025-05-20 22:23:14.888 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Checking if session exists for bob device 2: true
+2025-05-20 22:23:14.889 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:14.890 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] isTrustedIdentity for bob device 2: true
+2025-05-20 22:23:14.891 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Identity for bob device 2 unchanged
+2025-05-20 22:23:14.891 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:14.892 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Loaded session for bob device 2
+2025-05-20 22:23:14.892 DEBUG [pool-5-thread-1] com.securechat.store.SignalStore - [SignalStore] Stored session for bob device 2
+2025-05-20 22:23:14.892 INFO  [pool-5-thread-1] c.s.c.l.SignalProtocolManager - [SignalProtocolManager] Decrypted message from bob device 2
+2025-05-20 22:23:14.892 INFO  [pool-5-thread-1] c.securechat.network.PacketManager - [alice] Received MESSAGE from bob:2: 12 Anytime! Looking forward to seeing how well our secure chat holds up under more complex exchanges.
