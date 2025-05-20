@@ -1,6 +1,8 @@
 
 ```
 yapp
+├─ logs
+│  └─ securechat-server.log
 ├─ README.md
 └─ yapp
    ├─ pom.xml
@@ -17,6 +19,7 @@ yapp
    │  │  │        │  └─ libsignal
    │  │  │        │     ├─ PreKeyBundleBuilder.java
    │  │  │        │     ├─ PreKeyBundleDTO.java
+   │  │  │        │     ├─ SessionManager.java
    │  │  │        │     └─ SignalProtocolManager.java
    │  │  │        ├─ gui
    │  │  │        │  └─ ChatWindow.java
@@ -26,6 +29,7 @@ yapp
    │  │  │        │  └─ UserProfile.java
    │  │  │        ├─ network
    │  │  │        │  ├─ MessageRouter.java
+   │  │  │        │  ├─ PacketManager.java
    │  │  │        │  └─ PeerConnection.java
    │  │  │        ├─ protocol
    │  │  │        │  ├─ Packet.java
@@ -52,6 +56,7 @@ yapp
       │  │     │  └─ libsignal
       │  │     │     ├─ PreKeyBundleBuilder.class
       │  │     │     ├─ PreKeyBundleDTO.class
+      │  │     │     ├─ SessionManager.class
       │  │     │     └─ SignalProtocolManager.class
       │  │     ├─ gui
       │  │     │  └─ ChatWindow.class
@@ -61,12 +66,15 @@ yapp
       │  │     │  └─ UserProfile.class
       │  │     ├─ network
       │  │     │  ├─ MessageRouter.class
+      │  │     │  ├─ PacketManager$1.class
+      │  │     │  ├─ PacketManager.class
       │  │     │  └─ PeerConnection.class
       │  │     ├─ protocol
       │  │     │  ├─ Packet.class
       │  │     │  └─ PacketType.class
       │  │     ├─ server
       │  │     │  ├─ ClientManager.class
+      │  │     │  ├─ Server$1.class
       │  │     │  └─ Server.class
       │  │     └─ store
       │  │        └─ SignalStore.class
@@ -74,12 +82,11 @@ yapp
       │  └─ logback.xml
       ├─ generated-sources
       │  └─ annotations
-      ├─ maven-status
-      │  └─ maven-compiler-plugin
-      │     └─ compile
-      │        └─ default-compile
-      │           ├─ createdFiles.lst
-      │           └─ inputFiles.lst
-      └─ test-classes
+      └─ maven-status
+         └─ maven-compiler-plugin
+            └─ compile
+               └─ default-compile
+                  ├─ createdFiles.lst
+                  └─ inputFiles.lst
 
 ```

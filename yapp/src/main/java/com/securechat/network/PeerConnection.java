@@ -16,12 +16,6 @@ public class PeerConnection {
         this.input = new ObjectInputStream(socket.getInputStream());
     }
 
-    public void sendUserId(String userId) throws IOException {
-        DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-        dos.writeUTF(userId);
-        dos.flush();
-    }
-
     public void sendMessageObject(Object obj) throws IOException {
         synchronized (output) {
             output.writeObject(obj);
