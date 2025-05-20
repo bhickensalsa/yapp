@@ -8,7 +8,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Routes messages and manages peer connections per user and device.
+ * Manages peer connections and routes messages between users' devices.
+ *
+ * <p>This class maintains a thread-safe mapping of active peer connections,
+ * organized by user ID and device ID. It supports registering, unregistering,
+ * and routing message packets to the appropriate device connection.
+ * 
+ * @author bhickensalsa
+ * @version 0.1
  */
 public class MessageRouter {
 
@@ -20,11 +27,13 @@ public class MessageRouter {
     private final Map<String, Map<Integer, PeerConnection>> activePeers = new ConcurrentHashMap<>();
 
     /**
-     * Registers a peer connection for a specific user and device.
+     * Registers or replaces a peer connection for a specific user and device.
+     * If an existing connection is replaced, it will be closed.
      *
-     * @param userId     the user's unique ID
-     * @param deviceId   the device ID
-     * @param connection the peer connection to manage
+     * @param userId     the user's unique identifier (non-null)
+     * @param deviceId   the device ID (non-negative)
+     * @param connection the PeerConnection instance to register (non-null)
+     * @throws IllegalArgumentException if any parameter is invalid
      */
     public void registerPeer(String userId, int deviceId, PeerConnection connection) {
         if (userId == null || connection == null || deviceId < 0) {
@@ -52,10 +61,11 @@ public class MessageRouter {
     }
 
     /**
-     * Routes a message packet to the intended recipient device.
+     * Routes a message packet to the intended recipient device based on the
+     * recipient ID and device ID contained within the packet.
      *
-     * @param packet   the packet to route
-     * @param senderId the sender's user ID (for logging)
+     * @param packet   the message packet to route (non-null)
+     * @param senderId the sender's user ID (used for logging)
      */
     public void routeMessage(Packet packet, String senderId) {
         if (packet == null || packet.getRecipientId() == null) {
@@ -66,11 +76,12 @@ public class MessageRouter {
     }
 
     /**
-     * Routes a PreKey-related packet to the intended recipient device.
+     * Routes a PreKey-related packet to a specific recipient device.
+     * This is typically used for key exchange or session setup.
      *
-     * @param packet      the packet containing the PreKey bundle
-     * @param recipientId the user ID of the recipient
-     * @param deviceId    the target device ID
+     * @param packet      the packet containing the PreKey bundle (non-null)
+     * @param recipientId the recipient user's ID (non-null)
+     * @param deviceId    the recipient device ID
      */
     public void routePreKeyPacket(Packet packet, String recipientId, int deviceId) {
         if (packet == null || recipientId == null || packet.getPreKeyBundlePayload() == null) {
@@ -81,10 +92,12 @@ public class MessageRouter {
     }
 
     /**
-     * Unregisters all devices for a given user and closes all associated connections.
+     * Unregisters all device connections for the specified user and closes
+     * all associated peer connections.
      *
-     * @param userId the user to unregister
-     * @return true if any connections were unregistered, false otherwise
+     * @param userId the user ID to unregister (non-null)
+     * @return true if any connections were found and unregistered; false if
+     *         no connections were found for the user
      */
     public boolean unregisterPeer(String userId) {
         Map<Integer, PeerConnection> connections = activePeers.remove(userId);
@@ -105,11 +118,13 @@ public class MessageRouter {
     }
 
     /**
-     * Unregisters a specific device for a user.
+     * Unregisters a specific device connection for the given user and closes
+     * the associated peer connection. If the user has no remaining devices,
+     * the user is removed from active peers.
      *
-     * @param userId   the user ID
-     * @param deviceId the device ID
-     * @return true if device was unregistered, false otherwise
+     * @param userId   the user ID (non-null)
+     * @param deviceId the device ID to unregister
+     * @return true if the device connection was found and unregistered; false otherwise
      */
     public boolean unregisterPeerDevice(String userId, int deviceId) {
         return activePeers.computeIfPresent(userId, (uid, devices) -> {
@@ -124,18 +139,18 @@ public class MessageRouter {
             }
 
             if (devices.isEmpty()) {
-                return null; // removes user from activePeers
+                return null; // Removes the user from activePeers map
             }
             return devices;
         }) != null;
     }
 
     /**
-     * Retrieves a connection for a specific user and device.
+     * Retrieves the active peer connection for the specified user and device.
      *
-     * @param userId   the user ID
+     * @param userId   the user ID (non-null)
      * @param deviceId the device ID
-     * @return the peer connection if active; otherwise null
+     * @return the PeerConnection instance if present and active; otherwise null
      */
     private PeerConnection getConnection(String userId, int deviceId) {
         Map<Integer, PeerConnection> devices = activePeers.get(userId);
@@ -143,12 +158,13 @@ public class MessageRouter {
     }
 
     /**
-     * Helper method to send a packet to a specific peer connection.
+     * Sends a packet to the specified recipient's peer connection if it exists.
+     * Logs success or failure accordingly.
      *
-     * @param packet        the packet to send
-     * @param recipientId   the recipient user ID
+     * @param packet            the packet to send (non-null)
+     * @param recipientId       the recipient user ID (non-null)
      * @param recipientDeviceId the recipient device ID
-     * @param senderId      the sender user ID (optional, used for logging)
+     * @param senderId          the sender user ID (optional, may be null, used for logging)
      */
     private void sendToPeer(Packet packet, String recipientId, int recipientDeviceId, String senderId) {
         PeerConnection recipientConn = getConnection(recipientId, recipientDeviceId);
