@@ -1,4 +1,4 @@
-package com.securechat.crypto.libsignal;
+package com.securechat.protocol.dto;
 
 import com.google.gson.Gson;
 import org.slf4j.Logger;

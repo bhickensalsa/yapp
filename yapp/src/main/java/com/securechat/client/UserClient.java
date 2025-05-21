@@ -2,9 +2,11 @@ package com.securechat.client;
 
 import com.securechat.crypto.libsignal.*;
 import com.securechat.network.PeerConnection;
+import com.securechat.network.UserStatusUpdateListener;
 import com.securechat.network.PacketManager;
 import com.securechat.protocol.Packet;
 import com.securechat.protocol.PacketType;
+import com.securechat.protocol.dto.PreKeyBundleDTO;
 import com.securechat.store.SignalStore;
 
 import org.slf4j.Logger;
@@ -18,19 +20,20 @@ import java.net.Socket;
 import java.util.concurrent.*;
 
 /**
- * The {@code UserClient} class encapsulates the behavior of a SecureChat client instance.
- * Each client manages cryptographic material, establishes secure sessions with peers,
- * registers its public PreKeyBundle to the server, and handles encrypted message sending.
- *
- * <p>It leverages Signal Protocol (X3DH and Double Ratchet) and acts as the client's
- * main integration point with the server through {@link PeerConnection} and {@link PacketManager}.
- *
- * <p>Note: Message encryption/decryption and session management are handled entirely on the client.
- *
+ * Represents a SecureChat client that manages cryptographic keys, 
+ * establishes secure sessions with peers, registers its PreKeyBundle 
+ * with the server, and sends encrypted messages.
+ * 
+ * <p>Handles Signal Protocol integration (X3DH handshake and Double Ratchet),
+ * client-server communication, and asynchronous event notifications.
+ * 
+ * <p>Network communication and encryption/decryption occur client-side.
+ * 
  * @author bhickensalsa
- * @version 0.1
+ * @version 0.2
  */
 public class UserClient {
+
     private static final Logger logger = LoggerFactory.getLogger(UserClient.class);
 
     private final String userId;
@@ -44,18 +47,37 @@ public class UserClient {
     private PeerConnection connection;
     private PacketManager packetManager;
     private SessionManager sessionManager;
+    private UserStatusUpdateListener statusListener;
+    private IncomingMessageListener incomingMessageListener;
 
+    // Tracks pending asynchronous packet requests keyed by message ID
     private final ConcurrentHashMap<String, CompletableFuture<Packet>> pendingRequests = new ConcurrentHashMap<>();
+
+    // Thread pool executor for background async tasks
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     /**
-     * Constructs a new UserClient instance for a specific user and device.
-     *
-     * @param userId         Unique identifier for the user.
-     * @param userDeviceId   Unique identifier for this device.
-     * @param signalStore    Local storage for cryptographic state.
-     * @param preKeyId       PreKey ID used for registration.
-     * @param signedPreKeyId SignedPreKey ID used for registration.
+     * Functional interface for receiving decrypted messages asynchronously.
+     */
+    public interface IncomingMessageListener {
+        /**
+         * Called when a decrypted message is received from a peer.
+         * 
+         * @param fromUserId The sender's user ID.
+         * @param message The decrypted message content.
+         */
+        void onMessageReceived(String fromUserId, String message);
+    }
+
+    /**
+     * Constructs a new UserClient for a given user ID and device ID, 
+     * with associated cryptographic storage and key identifiers.
+     * 
+     * @param userId         The user's unique identifier.
+     * @param userDeviceId   The device's unique identifier.
+     * @param signalStore    Local store for cryptographic keys and sessions.
+     * @param preKeyId       PreKey ID for key registration.
+     * @param signedPreKeyId SignedPreKey ID for key registration.
      */
     public UserClient(String userId, int userDeviceId, SignalStore signalStore, int preKeyId, int signedPreKeyId) {
         this.userId = userId;
@@ -67,39 +89,101 @@ public class UserClient {
     }
 
     /**
-     * Initializes the client's cryptographic identity and generates key material
-     * including identity keys, prekeys, and signed prekeys.
+     * Sets the listener for user status updates (e.g., connection or error messages).
+     * 
+     * @param listener The listener to notify on status changes.
      */
-    public void initializeUser() {
-        logger.info("[{}] Initializing keys with PreKeyId={} and SignedPreKeyId={}", userId, preKeyId, signedPreKeyId);
-        try {
-            IdentityKeyPair identityKeyPair = KeyHelper.generateIdentityKeyPair();
-            int registrationId = KeyHelper.generateRegistrationId(false);
+    public void setUserStatusUpdateListener(UserStatusUpdateListener listener) {
+        this.statusListener = listener;
+    }
 
-            signalStore.initializeKeys(identityKeyPair, registrationId);
-            signalStore.storePreKey(preKeyId, KeyHelper.generatePreKeys(preKeyId, 1).get(0));
-            signalStore.storeSignedPreKey(signedPreKeyId, KeyHelper.generateSignedPreKey(identityKeyPair, signedPreKeyId));
+    /**
+     * Sets the listener for receiving decrypted incoming messages.
+     * 
+     * @param listener The listener to notify on incoming messages.
+     */
+    public void setIncomingMessageListener(IncomingMessageListener listener) {
+        this.incomingMessageListener = listener;
+    }
 
-            logger.info("[{}] Keys initialized successfully", userId);
-        } catch (Exception e) {
-            logger.error("[{}] Failed to initialize keys", userId, e);
+    /**
+     * Notifies the status listener about user status changes.
+     * 
+     * @param msg The status message to send.
+     */
+    private void notifyStatusUpdate(String msg) {
+        if (statusListener != null) {
+            statusListener.onUserStatusUpdate(msg);
         }
     }
 
     /**
-     * Connects the client to the SecureChat server and registers its PreKeyBundle.
-     *
-     * @param host Server hostname or IP.
-     * @param port Server port.
-     * @throws IOException if the connection or registration fails.
+     * Notifies the incoming message listener of a newly received decrypted message.
+     * 
+     * @param fromUserId The sender's user ID.
+     * @param message The decrypted message content.
+     */
+    private void notifyIncomingMessage(String fromUserId, String message) {
+        if (incomingMessageListener != null) {
+            incomingMessageListener.onMessageReceived(fromUserId, message);
+        }
+    }
+
+    /**
+     * Initializes the user's cryptographic keys and registers them in the SignalStore.
+     * Generates identity key pair, registration ID, prekeys, and signed prekeys.
+     */
+    public void initializeUser() {
+        logger.info("[{}] Initializing cryptographic keys (PreKeyId={}, SignedPreKeyId={})", userId, preKeyId, signedPreKeyId);
+        try {
+            // Generate identity key pair and registration ID
+            IdentityKeyPair identityKeyPair = KeyHelper.generateIdentityKeyPair();
+            int registrationId = KeyHelper.generateRegistrationId(false);
+
+            // Initialize keys in local storage
+            signalStore.initializeKeys(identityKeyPair, registrationId);
+
+            // Generate and store a PreKey
+            signalStore.storePreKey(preKeyId, KeyHelper.generatePreKeys(preKeyId, 1).get(0));
+
+            // Generate and store a SignedPreKey
+            signalStore.storeSignedPreKey(signedPreKeyId, KeyHelper.generateSignedPreKey(identityKeyPair, signedPreKeyId));
+
+            logger.info("[{}] Cryptographic keys initialized successfully", userId);
+            notifyStatusUpdate("Keys initialized");
+        } catch (Exception e) {
+            logger.error("[{}] Error initializing cryptographic keys", userId, e);
+            notifyStatusUpdate("Failed to initialize keys: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Connects to the SecureChat server at the specified host and port, 
+     * registers the client's PreKeyBundle, and starts listening for incoming packets.
+     * 
+     * @param host Server hostname or IP address.
+     * @param port Server port number.
+     * @throws IOException If network connection or registration fails.
      */
     public void connectToServer(String host, int port) throws IOException {
         logger.info("[{}] Connecting to server at {}:{}", userId, host, port);
         try {
+            // Open socket connection to the server
             this.connection = new PeerConnection(new Socket(host, port));
+
+            // Initialize packet and session managers
             this.packetManager = new PacketManager(userId, userDeviceId, connection, SPManager, pendingRequests);
             this.sessionManager = new SessionManager(userId, userDeviceId, SPManager, connection, pendingRequests);
 
+            // Register listeners for decrypted messages and status updates
+            packetManager.setDecryptedMessageListener((fromUser, fromDevice, message) -> {
+                logger.info("[{}] Received decrypted message from {}: {}", userId, fromUser, message);
+                notifyIncomingMessage(fromUser, message);
+            });
+
+            packetManager.setStatusUpdateListener(this::notifyStatusUpdate);
+
+            // Build PreKeyBundle for registration with the server
             PreKeyBundle bundle = PreKeyBundleBuilder.build(
                 signalStore.getLocalRegistrationId(),
                 userDeviceId,
@@ -108,70 +192,88 @@ public class UserClient {
                 signedPreKeyId
             );
 
+            // Send registration packet containing the PreKeyBundle
             Packet registrationPacket = new Packet(userId, userDeviceId, PreKeyBundleDTO.fromPreKeyBundle(bundle));
             connection.sendMessageObject(registrationPacket);
-            logger.info("[{}] Registered PreKeyBundle with server", userId);
 
+            logger.info("[{}] Registered PreKeyBundle with server", userId);
+            notifyStatusUpdate("Registered PreKeyBundle with server");
+
+            // Begin listening for incoming packets asynchronously
             packetManager.startListening();
+            notifyStatusUpdate("Listening for incoming packets...");
         } catch (IOException e) {
-            logger.error("[{}] IO error during connection", userId, e);
+            logger.error("[{}] IOException during server connection", userId, e);
             throw e;
         } catch (Exception e) {
-            logger.error("[{}] Unexpected error during setup", userId, e);
-            throw new IOException("Connection setup failed", e);
+            logger.error("[{}] Unexpected error during client setup", userId, e);
+            throw new IOException("Failed to set up connection", e);
         }
     }
 
     /**
-     * Initiates a secure session with a peer and sends the initial message.
-     *
-     * @param peerId        The recipient user's ID.
-     * @param peerDeviceId  The recipient's device ID.
-     * @param initialMessage The initial plaintext message to send.
+     * Establishes a secure session with a peer and sends an initial message.
+     * Uses Signal Protocol's X3DH handshake to setup session state.
+     * 
+     * @param peerId         The recipient user's ID.
+     * @param peerDeviceId   The recipient device's ID.
+     * @param initialMessage The plaintext message to send initially.
      */
     public void establishSession(String peerId, int peerDeviceId, String initialMessage) {
-        logger.info("[{}] Establishing session with peer {}:{}", userId, peerId, peerDeviceId);
-        sessionManager.establishSession(peerId, peerDeviceId, initialMessage);
-    }
-
-    /**
-     * Sends an encrypted message to a peer.
-     *
-     * @param peerId        The recipient user's ID.
-     * @param peerDeviceId  The recipient's device ID.
-     * @param message       The plaintext message to send.
-     */
-    public void sendMessage(String peerId, int peerDeviceId, String message) {
+        logger.info("[{}] Establishing secure session with peer {}:{}", userId, peerId, peerDeviceId);
         try {
-            packetManager.sendMessage(peerId, peerDeviceId, message, PacketType.MESSAGE);
-            logger.info("[{}] Sent message to {}:{}", userId, peerId, peerDeviceId);
+            sessionManager.establishSession(peerId, peerDeviceId, initialMessage);
+            notifyStatusUpdate("Session established with " + peerId + ":" + peerDeviceId);
         } catch (Exception e) {
-            logger.error("[{}] Failed to send message to {}:{}", userId, peerId, peerDeviceId, e);
+            logger.error("[{}] Failed to establish session with {}:{}", userId, peerId, peerDeviceId, e);
+            notifyStatusUpdate("Session establishment failed: " + e.getMessage());
         }
     }
 
     /**
-     * Sends an acknowledgment packet (ACK) to a peer.
-     *
-     * @param peerId       The peer's user ID.
-     * @param peerDeviceId The peer's device ID.
+     * Sends an encrypted message to a peer over an established secure session.
+     * 
+     * @param peerId       The recipient user's ID.
+     * @param peerDeviceId The recipient device's ID.
+     * @param message      The plaintext message to encrypt and send.
+     * @param type         The packet type indicating the message nature.
+     */
+    public void sendMessage(String peerId, int peerDeviceId, String message, PacketType type) {
+        try {
+            packetManager.sendMessage(peerId, peerDeviceId, message, type);
+            logger.info("[{}] Sent message to {}:{}", userId, peerId, peerDeviceId);
+            notifyStatusUpdate("Message sent to " + peerId);
+        } catch (Exception e) {
+            logger.error("[{}] Failed to send message to {}:{}", userId, peerId, peerDeviceId, e);
+            notifyStatusUpdate("Failed to send message: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Sends an acknowledgment (ACK) packet to a peer.
+     * 
+     * @param peerId       The recipient user's ID.
+     * @param peerDeviceId The recipient device's ID.
      */
     public void sendAck(String peerId, int peerDeviceId) {
         try {
             packetManager.sendAck(peerId, peerDeviceId);
             logger.info("[{}] Sent ACK to {}:{}", userId, peerId, peerDeviceId);
+            notifyStatusUpdate("ACK sent to " + peerId);
         } catch (Exception e) {
             logger.error("[{}] Failed to send ACK to {}:{}", userId, peerId, peerDeviceId, e);
+            notifyStatusUpdate("Failed to send ACK: " + e.getMessage());
         }
     }
 
     /**
-     * Shuts down the client, closes the connection, stops background listeners,
-     * and terminates the executor service.
+     * Stops the client by closing connections, shutting down listeners,
+     * and terminating background executor services cleanly.
      */
     public void stop() {
         logger.info("[{}] Shutting down client...", userId);
 
+        // Close the peer connection socket if open
         try {
             if (connection != null) {
                 connection.close();
@@ -181,6 +283,7 @@ public class UserClient {
             logger.error("[{}] Error closing connection", userId, e);
         }
 
+        // Shutdown PacketManager to stop background network listeners
         if (packetManager != null) {
             try {
                 packetManager.shutdown();
@@ -190,15 +293,16 @@ public class UserClient {
             }
         }
 
+        // Shutdown executor service and await termination
         executor.shutdownNow();
         try {
             if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
-                logger.warn("[{}] Executor did not shut down cleanly", userId);
+                logger.warn("[{}] Executor did not terminate cleanly", userId);
             } else {
-                logger.info("[{}] Executor shut down", userId);
+                logger.info("[{}] Executor shut down successfully", userId);
             }
         } catch (InterruptedException e) {
-            logger.error("[{}] Interrupted during shutdown", userId, e);
+            logger.error("[{}] Interrupted during executor shutdown", userId, e);
             Thread.currentThread().interrupt();
         }
     }

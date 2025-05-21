@@ -9,7 +9,7 @@ package com.securechat.protocol;
  * </p>
  * 
  * @author bhickensalsa
- * @version 0.1
+ * @version 0.2
  */
 public enum PacketType {
 
@@ -53,5 +53,23 @@ public enum PacketType {
      * Command packet used for control or protocol commands.
      * Can be used to execute protocol-level commands or other control operations.
      */
-    COMMAND
+    COMMAND,
+
+    /**
+     * Notification that a new user has connected.
+     * Sent by the server to clients when a new user joins.
+     */
+    USER_CONNECTED,
+
+    /**
+     * Notification that a user has disconnected.
+     * Sent by the server to clients when a user leaves.
+     */
+    USER_DISCONNECTED,
+
+    /**
+     * Packet containing the full list of currently connected users.
+     * Typically sent to a newly connected client.
+     */
+    USER_LIST_UPDATE
 }

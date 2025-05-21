@@ -1,8 +1,6 @@
 
 ```
 yapp
-├─ logs
-│  └─ securechat-server.log
 ├─ README.md
 └─ yapp
    ├─ pom.xml
@@ -18,30 +16,37 @@ yapp
    │  │  │        ├─ crypto
    │  │  │        │  └─ libsignal
    │  │  │        │     ├─ PreKeyBundleBuilder.java
-   │  │  │        │     ├─ PreKeyBundleDTO.java
    │  │  │        │     ├─ SessionManager.java
    │  │  │        │     └─ SignalProtocolManager.java
-   │  │  │        ├─ gui
-   │  │  │        │  └─ ChatWindow.java
    │  │  │        ├─ Launcher.java
    │  │  │        ├─ model
    │  │  │        │  ├─ KeyBundle.java
    │  │  │        │  └─ UserProfile.java
    │  │  │        ├─ network
+   │  │  │        │  ├─ DecryptedMessageListener.java
    │  │  │        │  ├─ MessageRouter.java
    │  │  │        │  ├─ PacketManager.java
-   │  │  │        │  └─ PeerConnection.java
+   │  │  │        │  ├─ PeerConnection.java
+   │  │  │        │  └─ UserStatusUpdateListener.java
    │  │  │        ├─ protocol
+   │  │  │        │  ├─ dto
+   │  │  │        │  │  ├─ PreKeyBundleDTO.java
+   │  │  │        │  │  ├─ UserInfoDTO.java
+   │  │  │        │  │  └─ UserListUpdateDTO.java
    │  │  │        │  ├─ Packet.java
    │  │  │        │  └─ PacketType.java
    │  │  │        ├─ server
    │  │  │        │  ├─ ClientManager.java
+   │  │  │        │  ├─ ConnectionListener.java
    │  │  │        │  └─ Server.java
-   │  │  │        └─ store
-   │  │  │           └─ SignalStore.java
+   │  │  │        ├─ store
+   │  │  │        │  └─ SignalStore.java
+   │  │  │        └─ ui
+   │  │  │           └─ ClientControlUI.java
    │  │  └─ resources
    │  │     ├─ config.properties
-   │  │     └─ logback.xml
+   │  │     ├─ logback.xml
+   │  │     └─ styles.css
    │  └─ test
    │     └─ java
    └─ target
@@ -49,37 +54,45 @@ yapp
       │  ├─ com
       │  │  └─ securechat
       │  │     ├─ client
+      │  │     │  ├─ UserClient$IncomingMessageListener.class
       │  │     │  └─ UserClient.class
       │  │     ├─ config
       │  │     │  └─ ConfigLoader.class
       │  │     ├─ crypto
       │  │     │  └─ libsignal
       │  │     │     ├─ PreKeyBundleBuilder.class
-      │  │     │     ├─ PreKeyBundleDTO.class
       │  │     │     ├─ SessionManager.class
       │  │     │     └─ SignalProtocolManager.class
-      │  │     ├─ gui
-      │  │     │  └─ ChatWindow.class
       │  │     ├─ Launcher.class
       │  │     ├─ model
       │  │     │  ├─ KeyBundle.class
       │  │     │  └─ UserProfile.class
       │  │     ├─ network
+      │  │     │  ├─ DecryptedMessageListener.class
       │  │     │  ├─ MessageRouter.class
       │  │     │  ├─ PacketManager$1.class
       │  │     │  ├─ PacketManager.class
-      │  │     │  └─ PeerConnection.class
+      │  │     │  ├─ PeerConnection.class
+      │  │     │  └─ UserStatusUpdateListener.class
       │  │     ├─ protocol
+      │  │     │  ├─ dto
+      │  │     │  │  ├─ PreKeyBundleDTO.class
+      │  │     │  │  ├─ UserInfoDTO.class
+      │  │     │  │  └─ UserListUpdateDTO.class
       │  │     │  ├─ Packet.class
       │  │     │  └─ PacketType.class
       │  │     ├─ server
       │  │     │  ├─ ClientManager.class
+      │  │     │  ├─ ConnectionListener.class
       │  │     │  ├─ Server$1.class
       │  │     │  └─ Server.class
-      │  │     └─ store
-      │  │        └─ SignalStore.class
+      │  │     ├─ store
+      │  │     │  └─ SignalStore.class
+      │  │     └─ ui
+      │  │        └─ ClientControlUI.class
       │  ├─ config.properties
-      │  └─ logback.xml
+      │  ├─ logback.xml
+      │  └─ styles.css
       ├─ generated-sources
       │  └─ annotations
       └─ maven-status

@@ -1,8 +1,9 @@
 package com.securechat.server;
 
-import com.securechat.crypto.libsignal.PreKeyBundleDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.securechat.protocol.dto.PreKeyBundleDTO;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

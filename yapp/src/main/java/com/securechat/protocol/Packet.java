@@ -1,7 +1,8 @@
 package com.securechat.protocol;
 
 import java.io.Serializable;
-import com.securechat.crypto.libsignal.PreKeyBundleDTO;
+
+import com.securechat.protocol.dto.PreKeyBundleDTO;
 
 /**
  * Represents a communication packet used in the secure chat protocol.
@@ -15,7 +16,7 @@ import com.securechat.crypto.libsignal.PreKeyBundleDTO;
  * over network streams.</p>
  * 
  * @author bhickensalsa
- * @version 0.1
+ * @version 0.2
  */
 public class Packet implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -82,8 +83,12 @@ public class Packet implements Serializable {
      * @throws IllegalArgumentException if the packet type is not one of MESSAGE, PREKEY_MESSAGE, or ACK
      */
     public Packet(String senderId, int senderDeviceId, String recipientId, int recipientDeviceId, byte[] messagePayload, PacketType type) {
-        if (type != PacketType.MESSAGE && type != PacketType.PREKEY_MESSAGE && type != PacketType.ACK) {
-            throw new IllegalArgumentException("Only MESSAGE, ACK, and PREKEY_MESSAGE packet types allowed for this constructor");
+        if (type != PacketType.MESSAGE &&
+            type != PacketType.PREKEY_MESSAGE &&
+            type != PacketType.ACK &&
+            type != PacketType.USER_CONNECTED &&
+            type != PacketType.USER_DISCONNECTED) {
+            throw new IllegalArgumentException("Unsupported packet type for message payload");
         }
         this.senderId = senderId;
         this.senderDeviceId = senderDeviceId;

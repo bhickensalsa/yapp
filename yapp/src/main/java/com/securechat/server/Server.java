@@ -1,10 +1,10 @@
 package com.securechat.server;
 
-import com.securechat.crypto.libsignal.PreKeyBundleDTO;
 import com.securechat.network.MessageRouter;
 import com.securechat.network.PeerConnection;
 import com.securechat.protocol.Packet;
 import com.securechat.protocol.PacketType;
+import com.securechat.protocol.dto.PreKeyBundleDTO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,20 +20,22 @@ import java.util.concurrent.Executors;
  * It accepts and manages client connections, routes messages, and handles cryptographic
  * pre-key bundle registration and lookup.
  * <p>
- * It runs on a specified port and uses a thread pool to manage client handler threads concurrently.
- * The server listens for various types of {@link Packet} including key exchange and encrypted messages.
+ * It uses a thread pool to concurrently handle client connections and a {@link MessageRouter}
+ * to manage routing of messages between peers.
  * </p>
  *
- * @author bhickensalsa
- * @version 0.1
+ * @author
+ * @version 0.2
  */
-public class Server {
+public class Server implements ConnectionListener {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     private final int port;
     private final ExecutorService pool = Executors.newCachedThreadPool();
     private final MessageRouter messageRouter = new MessageRouter();
     private final ClientManager clientManager = new ClientManager();
+    public static final String SYSTEM_SENDER_ID = "SERVER";
+    public static final int SYSTEM_SENDER_DEVICE_ID = -1;
 
     private volatile boolean isRunning = true;
 
@@ -57,7 +59,7 @@ public class Server {
 
     /**
      * Starts the server, begins accepting client connections, and dispatches
-     * handlers for processing incoming packets.
+     * handlers for processing incoming packets. Runs indefinitely until stopped.
      */
     public void start() {
         Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
@@ -88,10 +90,10 @@ public class Server {
     }
 
     /**
-     * Handles communication with a single client, processing incoming {@link Packet}s
-     * and routing or responding as needed.
+     * Handles communication with a single client. Receives and processes packets,
+     * handling registration, message routing, and error reporting.
      *
-     * @param conn The {@link PeerConnection} representing the client.
+     * @param conn The {@link PeerConnection} representing the connected client.
      */
     private void handleClient(PeerConnection conn) {
         logger.info("{} Started client handler for {}", prefix(), conn);
@@ -136,9 +138,10 @@ public class Server {
 
     /**
      * Handles registration of a pre-key bundle sent by a client.
+     * This is required for clients to participate in encrypted messaging.
      *
-     * @param packet The incoming {@link Packet} containing the bundle.
-     * @param conn   The {@link PeerConnection} of the sending client.
+     * @param packet The incoming {@link Packet} containing the pre-key bundle.
+     * @param conn   The {@link PeerConnection} representing the client.
      */
     private void handlePreKeyBundleRegistration(Packet packet, PeerConnection conn) {
         String userId = packet.getSenderId();
@@ -154,7 +157,7 @@ public class Server {
         try {
             clientManager.register(userId, deviceId, bundle);
             messageRouter.registerPeer(userId, deviceId, conn);
-            logger.info("{} Registered PreKeyBundle for user '{}' device '{}'", prefix(), userId, deviceId);
+            logger.info("{} Registered peer and PreKeyBundle for user '{}' device '{}'", prefix(), userId, deviceId);
         } catch (Exception e) {
             logger.error("{} Failed to register peer '{}' device '{}'", prefix(), userId, deviceId, e);
             sendError(conn, "Failed to register peer connection");
@@ -162,7 +165,8 @@ public class Server {
     }
 
     /**
-     * Handles a request for a user's pre-key bundle from another client.
+     * Handles a request to retrieve a user's pre-key bundle from another client.
+     * This enables initial session establishment.
      *
      * @param packet The request {@link Packet}.
      * @param conn   The connection from which the request originated.
@@ -182,8 +186,17 @@ public class Server {
 
         if (bundle != null) {
             try {
-                Packet response = new Packet(targetUserId, targetDeviceId, bundle);
-                conn.sendMessageObject(response);
+                Packet response = new Packet();
+                response.setType(PacketType.PREKEY_BUNDLE);
+                response.setSenderId(targetUserId);
+                response.setSenderDeviceId(targetDeviceId);
+                response.setRecipientId(requesterId);
+                response.setRecipientDeviceId(packet.getSenderDeviceId());
+                response.setPreKeyBundlePayload(bundle);
+
+                // Route via MessageRouter for tracking and routing consistency
+                messageRouter.routePreKeyPacket(response, requesterId, packet.getSenderDeviceId());
+
                 logger.info("{} Sent PREKEY_BUNDLE to requester '{}' for user '{}' device '{}'", prefix(), requesterId, targetUserId, targetDeviceId);
             } catch (Exception e) {
                 logger.error("{} Failed to send PREKEY_BUNDLE to requester '{}'", prefix(), requesterId, e);
@@ -199,17 +212,17 @@ public class Server {
      * Sends an error {@link Packet} back to the client with a specified message.
      *
      * @param conn    The connection to send the error to.
-     * @param message The error message as a string.
+     * @param message The human-readable error message.
      */
     private void sendError(PeerConnection conn, String message) {
         try {
             Packet errorPacket = new Packet();
             errorPacket.setType(PacketType.ERROR);
             errorPacket.setMessagePayload(message.getBytes(StandardCharsets.UTF_8));
-            errorPacket.setSenderId(null);
-            errorPacket.setRecipientId(null);
-            errorPacket.setSenderDeviceId(-1);
-            errorPacket.setRecipientDeviceId(-1);
+            errorPacket.setSenderId(SYSTEM_SENDER_ID);
+            errorPacket.setRecipientId(SYSTEM_SENDER_ID);
+            errorPacket.setSenderDeviceId(SYSTEM_SENDER_DEVICE_ID);
+            errorPacket.setRecipientDeviceId(SYSTEM_SENDER_DEVICE_ID);
 
             conn.sendMessageObject(errorPacket);
             logger.debug("{} Sent ERROR packet with message: {}", prefix(), message);
@@ -217,6 +230,49 @@ public class Server {
             logger.warn("{} Failed to send error packet: {}", prefix(), e.getMessage(), e);
         }
     }
+
+    @Override
+    public void onPeerConnected(String userId, int deviceId) {
+        logger.info("{} Notifying user '{}' about device '{}' connection", prefix(), userId, deviceId);
+
+        byte[] payload = ("User " + userId + " on device " + deviceId + " connected").getBytes(StandardCharsets.UTF_8);
+
+        messageRouter.getConnectedDeviceIds(userId).stream()
+            .filter(id -> id != deviceId)
+            .forEach(otherDeviceId -> {
+                Packet update = new Packet(
+                    SYSTEM_SENDER_ID,
+                    SYSTEM_SENDER_DEVICE_ID,
+                    userId,
+                    otherDeviceId,
+                    payload,
+                    PacketType.USER_CONNECTED
+                );
+                messageRouter.routeMessage(update, userId);
+            });
+    }
+
+    @Override
+    public void onPeerDisconnected(String userId, int deviceId) {
+        logger.info("{} Notifying user '{}' about device '{}' disconnection", prefix(), userId, deviceId);
+
+        byte[] payload = ("User " + userId + " on device " + deviceId + " disconnected").getBytes(StandardCharsets.UTF_8);
+
+        messageRouter.getConnectedDeviceIds(userId).stream()
+            .filter(id -> id != deviceId)
+            .forEach(otherDeviceId -> {
+                Packet update = new Packet(
+                    SYSTEM_SENDER_ID,
+                    SYSTEM_SENDER_DEVICE_ID,
+                    userId,
+                    otherDeviceId,
+                    payload,
+                    PacketType.USER_DISCONNECTED
+                );
+                messageRouter.routeMessage(update, userId);
+            });
+    }
+
 
     /**
      * Gracefully stops the server, shutting down the thread pool and ceasing

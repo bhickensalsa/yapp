@@ -1,5 +1,6 @@
 package com.securechat.network;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -24,7 +25,7 @@ import com.securechat.protocol.PacketType;
  * CompletableFutures to support asynchronous workflows.
  * 
  * @author bhickensalsa
- * @version 0.1
+ * @version 0.2
  */
 public class PacketManager {
     private static final Logger logger = LoggerFactory.getLogger(PacketManager.class);
@@ -35,6 +36,9 @@ public class PacketManager {
     private final SignalProtocolManager SPManager;
     private final ExecutorService pool;
     private final Map<String, CompletableFuture<Packet>> pendingRequests;
+
+    private DecryptedMessageListener decryptedMessageListener;
+    private UserStatusUpdateListener userStatusUpdateListener;
 
     /**
      * Constructs a PacketManager for the specified user device, managing
@@ -47,15 +51,34 @@ public class PacketManager {
      * @param pendingRequests a map tracking pending CompletableFuture responses keyed by unique request IDs (non-null)
      */
     public PacketManager(String userId, int userDeviceId,
-                         PeerConnection connection,
-                         SignalProtocolManager SPManager,
-                         Map<String, CompletableFuture<Packet>> pendingRequests) {
+    PeerConnection connection,
+    SignalProtocolManager SPManager,
+    Map<String, CompletableFuture<Packet>> pendingRequests) {
         this.userId = userId;
         this.userDeviceId = userDeviceId;
         this.connection = connection;
         this.SPManager = SPManager;
         this.pendingRequests = pendingRequests;
         this.pool = Executors.newSingleThreadExecutor();
+    }
+    
+    public void setDecryptedMessageListener(DecryptedMessageListener listener) {
+        this.decryptedMessageListener = listener;
+    }
+    
+    /**
+     * Sets the listener for user status updates.
+     *
+     * @param listener the listener to receive status updates
+     */
+    public void setStatusUpdateListener(UserStatusUpdateListener listener) {
+        this.userStatusUpdateListener = listener;
+    }
+
+    private void notifyGuiUserStatusUpdate(String updateMsg) {
+        if (userStatusUpdateListener != null) {
+            userStatusUpdateListener.onUserStatusUpdate(updateMsg);
+        }
     }
 
     /**
@@ -124,6 +147,7 @@ public class PacketManager {
         }
     }
 
+
     /**
      * Stops listening for incoming packets and shuts down the internal thread pool.
      * Once shut down, this PacketManager will no longer process incoming packets.
@@ -160,6 +184,9 @@ public class PacketManager {
                     String plaintext = SPManager.decryptPreKeyMessage(senderId, senderDeviceId, packet.getMessagePayload());
                     logger.info("[{}] Received PREKEY_MESSAGE from {}: {}", userId, senderKey, plaintext);
                     sendAck(senderId, senderDeviceId);
+                    if (decryptedMessageListener != null) {
+                        decryptedMessageListener.onDecryptedMessage(senderId, senderDeviceId, plaintext);
+                    }
                 }
 
                 case MESSAGE -> {
@@ -169,6 +196,9 @@ public class PacketManager {
                     }
                     String plaintext = SPManager.decryptMessage(senderId, senderDeviceId, packet.getMessagePayload());
                     logger.info("[{}] Received MESSAGE from {}: {}", userId, senderKey, plaintext);
+                    if (decryptedMessageListener != null) {
+                        decryptedMessageListener.onDecryptedMessage(senderId, senderDeviceId, plaintext);
+                    }
                 }
 
                 case ACK -> {
@@ -176,13 +206,13 @@ public class PacketManager {
                 }
 
                 case ERROR -> {
-                    String errorMsg = new String(packet.getMessagePayload());
+                    String errorMsg = new String(packet.getMessagePayload(), StandardCharsets.UTF_8);
                     logger.error("[{}] Received ERROR packet from {}: {}", userId, senderKey, errorMsg);
                     // Future: map error to pending request or notify listener
                 }
 
                 case COMMAND -> {
-                    String command = new String(packet.getMessagePayload());
+                    String command = new String(packet.getMessagePayload(), StandardCharsets.UTF_8);
                     logger.info("[{}] Received COMMAND from {}: {}", userId, senderKey, command);
                     // Optional: forward to command handler
                 }
@@ -190,6 +220,18 @@ public class PacketManager {
                 case GET_PREKEY_BUNDLE -> {
                     logger.warn("[{}] Received unexpected GET_PREKEY_BUNDLE from {}", userId, senderKey);
                     // Typically sent to server, not expected from peer
+                }
+
+                case USER_CONNECTED -> {
+                    String updateMsg = new String(packet.getMessagePayload(), StandardCharsets.UTF_8);
+                    logger.info("[{}] Update: {}", userId, updateMsg);
+                    notifyGuiUserStatusUpdate(updateMsg);
+                }
+
+                case USER_DISCONNECTED -> {
+                    String updateMsg = new String(packet.getMessagePayload(), StandardCharsets.UTF_8);
+                    logger.info("[{}] Update: {}", userId, updateMsg);
+                    notifyGuiUserStatusUpdate(updateMsg);
                 }
 
                 default -> {

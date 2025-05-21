@@ -3,6 +3,8 @@ package com.securechat.crypto.libsignal;
 import com.securechat.network.PeerConnection;
 import com.securechat.protocol.Packet;
 import com.securechat.protocol.PacketType;
+import com.securechat.protocol.dto.PreKeyBundleDTO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.whispersystems.libsignal.SignalProtocolAddress;
